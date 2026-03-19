@@ -1,0 +1,405 @@
+export type Difficulty = "apprentice" | "technician" | "engineer" | "master";
+
+export interface Puzzle {
+  id: string;
+  level: number;
+  difficulty: Difficulty;
+  category: string;
+  question: string;
+  hint?: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+  points: number;
+}
+
+export interface PoleComponent {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  voltage?: string;
+  funFact: string;
+  color: string;
+}
+
+export const poleComponents: PoleComponent[] = [
+  {
+    id: "transformer",
+    name: "Transformer",
+    emoji: "🔋",
+    description: "Steps down high-voltage electricity from transmission lines to usable levels for homes and businesses.",
+    voltage: "120/240V output",
+    funFact: "A single transformer can power 20–100 homes!",
+    color: "#fbbf24",
+  },
+  {
+    id: "insulator",
+    name: "Insulator",
+    emoji: "💎",
+    description: "Made of glass or porcelain, insulators prevent electricity from flowing into the pole and ground.",
+    funFact: "Glass insulators were used since the 1800s for telegraph lines.",
+    color: "#0ea5e9",
+  },
+  {
+    id: "crossarm",
+    name: "Cross Arm",
+    emoji: "➕",
+    description: "Horizontal wooden or steel beam that holds the wires apart and keeps them separated safely.",
+    funFact: "Cross arms keep wires separated to prevent dangerous arcing.",
+    color: "#a78bfa",
+  },
+  {
+    id: "neutral",
+    name: "Neutral Wire",
+    emoji: "〰️",
+    description: "The return path for current. It completes the circuit and is typically the lowest wire on the pole.",
+    funFact: "Neutral wires are typically grounded at every pole.",
+    color: "#6b7280",
+  },
+  {
+    id: "fuse",
+    name: "Fuse Cutout",
+    emoji: "🔒",
+    description: "Protective device that disconnects a circuit when current gets too high, preventing fires.",
+    funFact: "Linemen can open these with a hot stick from 10+ feet away!",
+    color: "#ef4444",
+  },
+  {
+    id: "arrester",
+    name: "Lightning Arrester",
+    emoji: "⚡",
+    description: "Protects equipment from lightning surges by routing excess voltage safely to ground.",
+    funFact: "Arresters can handle millions of volts from a lightning strike.",
+    color: "#f59e0b",
+  },
+  {
+    id: "streetlight",
+    name: "Street Light",
+    emoji: "💡",
+    description: "Mounted on poles to illuminate roads and public spaces for safety.",
+    funFact: "Modern LED streetlights use 50% less energy than old sodium lamps.",
+    color: "#fde68a",
+  },
+  {
+    id: "cablecom",
+    name: "Cable/Telecom Lines",
+    emoji: "📡",
+    description: "Lower on the pole, these carry cable TV, phone, and internet — separate from electric lines for safety.",
+    funFact: "These occupy the lowest zone (communication space) on a utility pole.",
+    color: "#34d399",
+  },
+];
+
+export const puzzles: Puzzle[] = [
+  {
+    id: "p1",
+    level: 1,
+    difficulty: "apprentice",
+    category: "Basics",
+    question: "What device on a utility pole steps down high voltage electricity for home use?",
+    options: ["Insulator", "Transformer", "Fuse Cutout", "Lightning Arrester"],
+    correct: 1,
+    explanation: "A transformer steps down high-voltage electricity (often 7,200V) from power lines to 120/240V that's safe for home appliances.",
+    points: 100,
+  },
+  {
+    id: "p2",
+    level: 2,
+    difficulty: "apprentice",
+    category: "Safety",
+    question: "Why are insulators used on utility poles?",
+    options: [
+      "To hold the wires in place horizontally",
+      "To prevent electricity from flowing into the pole",
+      "To protect against lightning",
+      "To measure voltage"
+    ],
+    correct: 1,
+    explanation: "Insulators are made of non-conducting materials (glass or porcelain) that stop electricity from flowing through the wooden pole to the ground.",
+    points: 100,
+  },
+  {
+    id: "p3",
+    level: 3,
+    difficulty: "apprentice",
+    category: "Circuit Basics",
+    question: "On a utility pole, which wire is generally positioned LOWEST?",
+    options: ["High-voltage transmission wire", "Phase wire", "Neutral wire", "Cable/telecom lines"],
+    correct: 3,
+    explanation: "The communication space (lowest) has cable/telecom lines. Above that is the neutral wire, then phase wires higher up — following the utility pole's zone structure.",
+    points: 100,
+    hint: "Think about safety zones from top to bottom",
+  },
+  {
+    id: "p4",
+    level: 4,
+    difficulty: "apprentice",
+    category: "Ohm's Law",
+    question: "If voltage = 120V and resistance = 60 ohms, what is the current? (I = V/R)",
+    options: ["0.5A", "1A", "2A", "3A"],
+    correct: 2,
+    explanation: "Using Ohm's Law: I = V/R = 120V ÷ 60Ω = 2 Amperes. This is the fundamental equation of electrical engineering!",
+    points: 150,
+    hint: "Divide voltage by resistance",
+  },
+  {
+    id: "p5",
+    level: 5,
+    difficulty: "apprentice",
+    category: "Safety",
+    question: "What does a fuse cutout do on a utility pole?",
+    options: [
+      "Boosts voltage during low demand",
+      "Disconnects a circuit when current is too high",
+      "Converts AC to DC power",
+      "Measures power consumption"
+    ],
+    correct: 1,
+    explanation: "A fuse cutout is a protective device. When too much current flows (fault or overload), it opens the circuit to prevent fires and equipment damage.",
+    points: 150,
+  },
+  {
+    id: "p6",
+    level: 6,
+    difficulty: "technician",
+    category: "Power Formula",
+    question: "A distribution transformer supplies 120V at 20A. What is the power output?",
+    options: ["600W", "1200W", "2400W", "4800W"],
+    correct: 2,
+    explanation: "Power = Voltage × Current → P = 120V × 20A = 2,400 Watts (2.4 kW). This could power a typical electric stove!",
+    points: 200,
+  },
+  {
+    id: "p7",
+    level: 7,
+    difficulty: "technician",
+    category: "Distribution Voltage",
+    question: "Distribution lines commonly run at what voltage for residential areas?",
+    options: ["240V", "480V", "7,200V", "500,000V"],
+    correct: 2,
+    explanation: "Primary distribution lines run at 7,200V (7.2kV). The transformer steps this down to 120/240V for homes. Transmission lines can reach 500kV or more.",
+    points: 200,
+  },
+  {
+    id: "p8",
+    level: 8,
+    difficulty: "technician",
+    category: "Grounding",
+    question: "Why is the neutral wire grounded at every utility pole?",
+    options: [
+      "To increase voltage",
+      "To provide a safe return path and limit shock hazards",
+      "To prevent lightning strikes",
+      "To boost transmission distance"
+    ],
+    correct: 1,
+    explanation: "Grounding the neutral provides a safe, low-resistance return path for current and keeps the neutral close to earth potential, reducing electric shock risk.",
+    points: 200,
+  },
+  {
+    id: "p9",
+    level: 9,
+    difficulty: "technician",
+    category: "Math",
+    question: "A 10kVA transformer operates at 7,200V primary. What is the primary current?",
+    options: ["0.72A", "1.39A", "7.2A", "72A"],
+    correct: 1,
+    explanation: "I = kVA / V = 10,000VA ÷ 7,200V ≈ 1.39A. Lower current at higher voltage means less line loss — why we transmit at high voltages!",
+    points: 250,
+    hint: "I = apparent power (VA) ÷ voltage",
+  },
+  {
+    id: "p10",
+    level: 10,
+    difficulty: "technician",
+    category: "AC Power",
+    question: "In a purely resistive circuit, what is the power factor?",
+    options: ["0", "0.5", "0.707", "1.0"],
+    correct: 3,
+    explanation: "In a purely resistive circuit, voltage and current are in phase, so Power Factor = cos(0°) = 1.0 (unity power factor). No reactive power is consumed.",
+    points: 250,
+  },
+  {
+    id: "p11",
+    level: 11,
+    difficulty: "engineer",
+    category: "Voltage Drop",
+    question: "A 100ft run of #12 AWG copper wire carries 15A. Resistance is 0.16 ohms/100ft. What's the voltage drop?",
+    options: ["1.2V", "2.4V", "4.8V", "9.6V"],
+    correct: 1,
+    explanation: "Voltage Drop = I × R = 15A × 0.16Ω = 2.4V. This represents a 2% drop on 120V — within the acceptable 3% limit for branch circuits!",
+    points: 300,
+    hint: "V = I × R (Ohm's Law for voltage drop)",
+  },
+  {
+    id: "p12",
+    level: 12,
+    difficulty: "engineer",
+    category: "3-Phase",
+    question: "In a balanced 3-phase system, if line voltage is 13.8kV, what is the phase voltage?",
+    options: ["4,600V", "7,967V", "13,800V", "23,900V"],
+    correct: 1,
+    explanation: "Phase voltage = Line voltage ÷ √3 = 13,800V ÷ 1.732 ≈ 7,967V. This relationship is fundamental to 3-phase power distribution.",
+    points: 350,
+    hint: "Phase V = Line V ÷ √3 (approximately 1.732)",
+  },
+  {
+    id: "p13",
+    level: 13,
+    difficulty: "engineer",
+    category: "Reactance",
+    question: "An inductor has 10 ohms reactance at 60Hz. What happens to reactance at 120Hz?",
+    options: ["5 ohms (halved)", "10 ohms (same)", "20 ohms (doubled)", "100 ohms (×10)"],
+    correct: 2,
+    explanation: "Inductive reactance XL = 2πfL. When frequency doubles, XL doubles. So 10Ω × 2 = 20Ω. This is why power systems stick to 60Hz.",
+    points: 350,
+  },
+  {
+    id: "p14",
+    level: 14,
+    difficulty: "engineer",
+    category: "Power Triangle",
+    question: "A motor draws 10kVA at 0.8 power factor. What is the true (real) power?",
+    options: ["6kW", "8kW", "10kW", "12kW"],
+    correct: 1,
+    explanation: "Real Power = Apparent Power × PF = 10kVA × 0.8 = 8kW. The reactive power stresses the wires but does no useful work.",
+    points: 400,
+    hint: "P = S × cos(θ) where S is apparent power",
+  },
+  {
+    id: "p15",
+    level: 15,
+    difficulty: "engineer",
+    category: "Safety",
+    question: "OSHA minimum approach distance for 15kV energized conductors for qualified workers is approximately:",
+    options: ["1 foot 0 inches", "1 foot 7 inches", "2 feet 2 inches", "3 feet 6 inches"],
+    correct: 2,
+    explanation: "OSHA Table S-5 sets minimum approach distances. For 15kV systems, qualified workers must maintain at least 2 feet 2 inches from exposed energized parts.",
+    points: 400,
+  },
+  {
+    id: "p16",
+    level: 16,
+    difficulty: "master",
+    category: "Fault Current",
+    question: "A 7,200/120V transformer has 2% impedance and 50kVA rating. Approximate fault current at secondary?",
+    options: ["208A", "2,083A", "20,833A", "41,667A"],
+    correct: 2,
+    explanation: "Fault current ≈ rated current ÷ Z% = (50,000VA÷120V) ÷ 0.02 ≈ 20,833A. This is why properly rated breakers and fuses are critical!",
+    points: 500,
+    hint: "I_fault = I_rated ÷ Z(per unit)",
+  },
+  {
+    id: "p17",
+    level: 17,
+    difficulty: "master",
+    category: "Transmission",
+    question: "Why does doubling transmission voltage reduce line losses by a factor of 4?",
+    options: [
+      "Higher voltage means more current",
+      "Loss = I²R; doubling V halves I for same power, so I² drops by 4",
+      "Wire resistance decreases at high voltage",
+      "Higher voltage creates magnetic shielding"
+    ],
+    correct: 1,
+    explanation: "P_loss = I²R. For constant power (P = VI), doubling voltage halves current. Loss = (I/2)²R = I²R/4. This is why HVDC lines save billions in energy!",
+    points: 500,
+  },
+  {
+    id: "p18",
+    level: 18,
+    difficulty: "master",
+    category: "Per Unit System",
+    question: "In the per-unit system, a base of 100MVA and 115kV is used. What is the base impedance?",
+    options: ["0.132 ohms", "13.2 ohms", "132.25 ohms", "1,322.5 ohms"],
+    correct: 2,
+    explanation: "Z_base = (kV)² ÷ MVA = (115²) ÷ 100 = 13,225 ÷ 100 = 132.25 ohms. Per-unit system normalizes all quantities, making complex network analysis much easier.",
+    points: 600,
+    hint: "Z_base = V²_base / S_base",
+  },
+  {
+    id: "p19",
+    level: 19,
+    difficulty: "master",
+    category: "Symmetrical Components",
+    question: "In symmetrical component analysis, a single line-to-ground fault involves which sequence networks?",
+    options: [
+      "Positive sequence only",
+      "Positive and negative sequence in series",
+      "Positive, negative, and zero sequence in series",
+      "Zero sequence only"
+    ],
+    correct: 2,
+    explanation: "A single line-to-ground fault involves all three sequence networks (positive, negative, and zero) connected in series — fundamental to protective relay design.",
+    points: 600,
+  },
+  {
+    id: "p20",
+    level: 20,
+    difficulty: "master",
+    category: "Ultimate Challenge",
+    question: "The skin effect causes current to concentrate near a conductor surface. For copper at 60Hz, skin depth is approximately:",
+    options: ["0.85mm", "8.5mm", "85mm", "850mm"],
+    correct: 1,
+    explanation: "Copper skin depth at 60Hz is ~8.5mm. ACSR conductors use a steel core for strength with stranded aluminum for the current path — optimizing for both mechanical and electrical performance!",
+    points: 750,
+    hint: "delta = sqrt(rho/(pi × f × mu))",
+  },
+];
+
+export const difficultyConfig = {
+  apprentice: { label: "Apprentice", color: "#22c55e", emoji: "🔧", levels: "1-5" },
+  technician: { label: "Technician", color: "#0ea5e9", emoji: "⚡", levels: "6-10" },
+  engineer: { label: "Engineer", color: "#a855f7", emoji: "🔌", levels: "11-15" },
+  master: { label: "Master", color: "#fbbf24", emoji: "👷", levels: "16-20" },
+};
+
+export const campaigns = [
+  {
+    id: "c1",
+    title: "Spring Safety Challenge",
+    prize: "$250 Gift Card",
+    emoji: "🏆",
+    description: "Answer 10 questions correctly in a row to enter the grand prize drawing!",
+    endsIn: "14 days",
+    entries: 1247,
+    active: true,
+    color: "#fbbf24",
+  },
+  {
+    id: "c2",
+    title: "Master Lineman Quiz",
+    prize: "Pro Tool Kit",
+    emoji: "🔧",
+    description: "Complete all 20 levels without using any hints. Prove you're a true master!",
+    endsIn: "7 days",
+    entries: 423,
+    active: true,
+    color: "#0ea5e9",
+  },
+  {
+    id: "c3",
+    title: "Speed Round Bonus",
+    prize: "Utility Cap + Shirt",
+    emoji: "⏱️",
+    description: "Answer 5 questions in under 30 seconds each. Fastest completion wins merch!",
+    endsIn: "3 days",
+    entries: 891,
+    active: true,
+    color: "#a855f7",
+  },
+];
+
+export const leaderboard = [
+  { rank: 1, name: "Jordan M.", score: 14250, level: 20, badge: "👷 Master", streak: 15 },
+  { rank: 2, name: "Alex R.", score: 12800, level: 19, badge: "⚡ Engineer", streak: 11 },
+  { rank: 3, name: "Sam T.", score: 11500, level: 18, badge: "⚡ Engineer", streak: 9 },
+  { rank: 4, name: "Casey W.", score: 9750, level: 16, badge: "⚡ Engineer", streak: 7 },
+  { rank: 5, name: "Morgan L.", score: 8200, level: 14, badge: "🔌 Technician", streak: 5 },
+  { rank: 6, name: "Riley P.", score: 7100, level: 12, badge: "🔌 Technician", streak: 4 },
+  { rank: 7, name: "Taylor B.", score: 5950, level: 9, badge: "🔧 Technician", streak: 3 },
+  { rank: 8, name: "Quinn A.", score: 4300, level: 7, badge: "🔧 Apprentice", streak: 2 },
+  { rank: 9, name: "Avery S.", score: 3100, level: 5, badge: "🔧 Apprentice", streak: 1 },
+  { rank: 10, name: "Blake K.", score: 2400, level: 4, badge: "🔧 Apprentice", streak: 1 },
+];

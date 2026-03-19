@@ -27,6 +27,9 @@
 # ============================================================================
 minimumReleaseAge: 1440
 
+minimumReleaseAgeExclude:
+  - '@replit/vite-plugin-cartographer'
+
 packages:
   - artifacts/*
   - lib/*
