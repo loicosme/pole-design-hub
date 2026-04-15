@@ -5,10 +5,10 @@ export const register = mutation({
   args: {
     name: v.string(),
     email: v.string(),
-    phone: v.string(),
-    school: v.string(),
-    gradYear: v.string(),
-    roleInterest: v.string(),
+    phone: v.optional(v.string()),
+    school: v.optional(v.string()),
+    gradYear: v.optional(v.string()),
+    roleInterest: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const id = await ctx.db.insert("players", {

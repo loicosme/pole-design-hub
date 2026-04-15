@@ -35,10 +35,6 @@ export default function SignUpScreen({ onRegistered }: Props) {
   const valid =
     name.trim() &&
     email.trim() &&
-    phone.trim() &&
-    school.trim() &&
-    gradYear &&
-    roleInterest &&
     consent;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -208,37 +204,34 @@ export default function SignUpScreen({ onRegistered }: Props) {
 
         {/* Phone */}
         <div>
-          <label style={labelStyle}>PHONE NUMBER *</label>
+          <label style={labelStyle}>PHONE NUMBER <span style={{ color: "#475569", fontWeight: 400 }}>(optional)</span></label>
           <input
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+1 (555) 000-0000"
-            required
             style={inputStyle}
           />
         </div>
 
         {/* School */}
         <div>
-          <label style={labelStyle}>UNIVERSITY / SCHOOL *</label>
+          <label style={labelStyle}>UNIVERSITY / SCHOOL <span style={{ color: "#475569", fontWeight: 400 }}>(optional)</span></label>
           <input
             type="text"
             value={school}
             onChange={(e) => setSchool(e.target.value)}
             placeholder="University of ..."
-            required
             style={inputStyle}
           />
         </div>
 
         {/* Grad Year */}
         <div>
-          <label style={labelStyle}>GRADUATION YEAR *</label>
+          <label style={labelStyle}>GRADUATION YEAR <span style={{ color: "#475569", fontWeight: 400 }}>(optional)</span></label>
           <select
             value={gradYear}
             onChange={(e) => setGradYear(e.target.value)}
-            required
             style={{ ...inputStyle, appearance: "none" }}
           >
             <option value="" disabled>
@@ -254,7 +247,7 @@ export default function SignUpScreen({ onRegistered }: Props) {
 
         {/* Role Interest */}
         <div>
-          <label style={labelStyle}>AREA OF INTEREST *</label>
+          <label style={labelStyle}>AREA OF INTEREST <span style={{ color: "#475569", fontWeight: 400 }}>(optional)</span></label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {roleOptions.map((r) => (
               <button
