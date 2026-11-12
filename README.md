@@ -151,13 +151,20 @@ Open `http://localhost:5173`.
 
 ## Production Deploy
 
-```bash
-# Deploy Convex schema + functions to cloud
-npx convex deploy
+Vercel deploys the backend and the frontend together. The build command in `vercel.json` is:
 
-# Add VITE_CONVEX_URL to Vercel environment variables
-# Then push to GitHub — Vercel auto-deploys
+```bash
+npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name VITE_CONVEX_URL
 ```
+
+It pushes the Convex schema and functions first, then builds the site against that deployment. If the Convex step fails, the build fails and the previous version stays live, so the two can't drift apart.
+
+One-time setup:
+
+1. Convex dashboard → your project → Settings → generate a **Production deploy key**
+2. Vercel → Project → Settings → Environment Variables → add `CONVEX_DEPLOY_KEY` with that key, **Production** environment only
+3. `npx convex env set ADMIN_KEY "pick-a-long-passcode"` for the recruiter page
+4. Push to `master`, or hit Redeploy in Vercel
 
 ---
 
