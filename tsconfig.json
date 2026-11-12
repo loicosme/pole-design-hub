@@ -11,6 +11,7 @@
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "strict": true,
+    "skipLibCheck": true,
     "types": ["node", "vite/client"],
     "paths": {
       "@/*": ["./src/*"]

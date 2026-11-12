@@ -8,8 +8,9 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as attempts from "../attempts.js";
-import type * as constants from "../constants.js";
+import type * as draw from "../draw.js";
 import type * as leaderboard from "../leaderboard.js";
 import type * as players from "../players.js";
 import type * as resumes from "../resumes.js";
@@ -21,8 +22,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   attempts: typeof attempts;
-  constants: typeof constants;
+  draw: typeof draw;
   leaderboard: typeof leaderboard;
   players: typeof players;
   resumes: typeof resumes;

@@ -1,10 +1,24 @@
+// Quiz and pole content. Shared by the frontend and by Convex (server-side scoring),
+// so keep this file free of browser or React imports.
+//
+// Content notes: voltages and standards use Canadian (Prairie) practice:
+// 25 kV class distribution (14.4 kV line-to-ground), CSA C22.3 No. 1 for overhead lines.
+// Have a P.Eng. review any edits before an event.
+
 export type Difficulty = "apprentice" | "technician" | "engineer" | "master";
+
+export type Category =
+  | "Pole anatomy"
+  | "Line design"
+  | "Safety"
+  | "Circuits"
+  | "Power systems";
 
 export interface Puzzle {
   id: string;
   level: number;
   difficulty: Difficulty;
-  category: string;
+  category: Category;
   question: string;
   hint?: string;
   options: string[];
@@ -15,391 +29,544 @@ export interface Puzzle {
 
 export interface PoleComponent {
   id: string;
+  /** Item number shown in the drawing balloon. */
+  item: number;
   name: string;
-  emoji: string;
+  zone: string;
   description: string;
-  voltage?: string;
-  funFact: string;
-  color: string;
+  detail: string;
 }
 
 export const poleComponents: PoleComponent[] = [
   {
-    id: "transformer",
-    name: "Transformer",
-    emoji: "🔋",
-    description: "Steps down high-voltage electricity from transmission lines to usable levels for homes and businesses.",
-    voltage: "120/240V output",
-    funFact: "A single transformer can power 20–100 homes!",
-    color: "#fbbf24",
-  },
-  {
     id: "insulator",
+    item: 1,
     name: "Insulator",
-    emoji: "💎",
-    description: "Made of glass or porcelain, insulators prevent electricity from flowing into the pole and ground.",
-    funFact: "Glass insulators were used since the 1800s for telegraph lines.",
-    color: "#0ea5e9",
+    zone: "Primary",
+    description:
+      "Holds the energized conductor and keeps current from tracking into the crossarm and pole. Porcelain, glass or polymer.",
+    detail: "The skirts lengthen the surface path so rain and dirt can't bridge it easily.",
   },
   {
     id: "crossarm",
-    name: "Cross Arm",
-    emoji: "➕",
-    description: "Horizontal wooden or steel beam that holds the wires apart and keeps them separated safely.",
-    funFact: "Cross arms keep wires separated to prevent dangerous arcing.",
-    color: "#a78bfa",
-  },
-  {
-    id: "neutral",
-    name: "Neutral Wire",
-    emoji: "〰️",
-    description: "The return path for current. It completes the circuit and is typically the lowest wire on the pole.",
-    funFact: "Neutral wires are typically grounded at every pole.",
-    color: "#6b7280",
-  },
-  {
-    id: "fuse",
-    name: "Fuse Cutout",
-    emoji: "🔒",
-    description: "Protective device that disconnects a circuit when current gets too high, preventing fires.",
-    funFact: "Linemen can open these with a hot stick from 10+ feet away!",
-    color: "#ef4444",
+    item: 2,
+    name: "Crossarm",
+    zone: "Primary",
+    description:
+      "Wood, steel or fibreglass arm that carries the phase conductors and sets the spacing between them.",
+    detail: "Spacing is a design value. Too tight and conductors can clash in wind or when ice sheds.",
   },
   {
     id: "arrester",
-    name: "Lightning Arrester",
-    emoji: "⚡",
-    description: "Protects equipment from lightning surges by routing excess voltage safely to ground.",
-    funFact: "Arresters can handle millions of volts from a lightning strike.",
-    color: "#f59e0b",
+    item: 3,
+    name: "Surge arrester",
+    zone: "Equipment",
+    description:
+      "Sits beside equipment and diverts lightning and switching surges to ground before they damage it.",
+    detail: "At normal voltage it behaves like an open circuit. It only conducts during an overvoltage.",
+  },
+  {
+    id: "fuse",
+    item: 4,
+    name: "Fused cutout",
+    zone: "Equipment",
+    description:
+      "A fuse and switch in one. It opens when fault current flows, isolating the transformer from the line.",
+    detail: "When the fuse blows the barrel drops open, so a crew can spot it from the ground.",
+  },
+  {
+    id: "transformer",
+    item: 5,
+    name: "Distribution transformer",
+    zone: "Equipment",
+    description:
+      "Steps the primary voltage (14.4 kV line-to-ground on a 25 kV system) down to 120/240 V for homes and small businesses.",
+    detail: "One pole-mount unit typically serves a handful of homes, or a single farmyard.",
+  },
+  {
+    id: "neutral",
+    item: 6,
+    name: "Neutral and secondary",
+    zone: "Secondary",
+    description:
+      "The neutral is the return path for load current. Below it, secondary conductors carry 120/240 V to the service drops.",
+    detail: "The neutral is bonded to ground at many points along the line, which keeps it near earth potential.",
   },
   {
     id: "streetlight",
-    name: "Street Light",
-    emoji: "💡",
-    description: "Mounted on poles to illuminate roads and public spaces for safety.",
-    funFact: "Modern LED streetlights use 50% less energy than old sodium lamps.",
-    color: "#fde68a",
+    item: 7,
+    name: "Street light",
+    zone: "Secondary",
+    description: "Fed from the secondary. LED fixtures have replaced most high-pressure sodium lights.",
+    detail: "A light adds wind load and a bracket moment the pole design has to account for.",
   },
   {
     id: "cablecom",
-    name: "Cable/Telecom Lines",
-    emoji: "📡",
-    description: "Lower on the pole, these carry cable TV, phone, and internet — separate from electric lines for safety.",
-    funFact: "These occupy the lowest zone (communication space) on a utility pole.",
-    color: "#34d399",
+    item: 8,
+    name: "Communication cables",
+    zone: "Communication",
+    description:
+      "Telephone, cable TV and fibre owned by other companies. They attach in the communication space, below all power conductors.",
+    detail: "A required gap separates them from the power space so telecom crews can work safely.",
+  },
+  {
+    id: "guy",
+    item: 9,
+    name: "Guy and anchor",
+    zone: "Structure",
+    description:
+      "A steel strand from the pole to a ground anchor. It balances the pull where a line ends or changes direction.",
+    detail: "Without it, an angle or dead-end pole would lean over time or break at the ground line.",
   },
 ];
 
+export const poleZones: { zone: string; text: string }[] = [
+  { zone: "Primary", text: "Phase conductors, 25 kV class" },
+  { zone: "Equipment", text: "Transformer, cutout, arrester" },
+  { zone: "Secondary", text: "Neutral, 120/240 V, street lights" },
+  { zone: "Communication", text: "Telephone, cable, fibre" },
+  { zone: "Structure", text: "Pole, guys, anchors, grounding" },
+];
+
 export const puzzles: Puzzle[] = [
+  // ── Apprentice ──────────────────────────────────────────────────────────
   {
     id: "p1",
     level: 1,
     difficulty: "apprentice",
-    category: "Basics",
-    question: "What device on a utility pole steps down high voltage electricity for home use?",
-    options: ["Insulator", "Transformer", "Fuse Cutout", "Lightning Arrester"],
+    category: "Pole anatomy",
+    question: "Which device on a pole steps the line voltage down for use in a home?",
+    options: ["Insulator", "Transformer", "Fused cutout", "Surge arrester"],
     correct: 1,
-    explanation: "A transformer steps down high-voltage electricity (often 7,200V) from power lines to 120/240V that's safe for home appliances.",
+    explanation:
+      "The distribution transformer takes the primary voltage (14,400 V on many Prairie feeders) down to 120/240 V.",
     points: 100,
   },
   {
     id: "p2",
-    level: 2,
+    level: 1,
     difficulty: "apprentice",
-    category: "Safety",
-    question: "Why are insulators used on utility poles?",
+    category: "Pole anatomy",
+    question: "Why do conductors sit on insulators instead of being bolted straight to the crossarm?",
     options: [
-      "To hold the wires in place horizontally",
-      "To prevent electricity from flowing into the pole",
+      "To hold the wires level",
+      "To stop current from flowing into the structure",
       "To protect against lightning",
-      "To measure voltage"
+      "To measure voltage",
     ],
     correct: 1,
-    explanation: "Insulators are made of non-conducting materials (glass or porcelain) that stop electricity from flowing through the wooden pole to the ground.",
+    explanation:
+      "Insulators are porcelain, glass or polymer. They support the conductor while keeping current out of the arm and pole.",
+    points: 100,
+  },
+  {
+    id: "p21",
+    level: 2,
+    difficulty: "apprentice",
+    category: "Line design",
+    question: "A line ends at a pole. What is the steel guy wire running down to the ground for?",
+    options: [
+      "It grounds the transformer",
+      "It balances the pull of the conductors",
+      "It carries the neutral current",
+      "It stops vehicles hitting the pole",
+    ],
+    correct: 1,
+    explanation:
+      "At a dead-end or an angle, conductor tension pulls one way. The guy and anchor pull back so the pole isn't bent.",
+    points: 100,
+  },
+  {
+    id: "p22",
+    level: 2,
+    difficulty: "apprentice",
+    category: "Line design",
+    question: "ACSR is the most common overhead conductor. What does it stand for?",
+    options: [
+      "Aluminum Conductor Steel Reinforced",
+      "Alternating Current Standard Rated",
+      "Aluminum Copper Stranded Round",
+      "Aerial Cable Service Rated",
+    ],
+    correct: 0,
+    explanation:
+      "Aluminum strands carry the current. The steel core carries the tension, which lets the line span farther.",
     points: 100,
   },
   {
     id: "p3",
     level: 3,
     difficulty: "apprentice",
-    category: "Circuit Basics",
-    question: "On a utility pole, which wire is generally positioned LOWEST?",
-    options: ["High-voltage transmission wire", "Phase wire", "Neutral wire", "Cable/telecom lines"],
+    category: "Pole anatomy",
+    question: "Which of these is normally attached lowest on a shared pole?",
+    options: ["Primary phase conductor", "Secondary conductor", "Neutral", "Communication cable"],
     correct: 3,
-    explanation: "The communication space (lowest) has cable/telecom lines. Above that is the neutral wire, then phase wires higher up — following the utility pole's zone structure.",
+    explanation:
+      "Communication cables sit in their own space at the bottom. Power conductors go above, with the highest voltage at the top.",
     points: 100,
-    hint: "Think about safety zones from top to bottom",
+    hint: "Voltage goes up as you go up the pole.",
   },
   {
     id: "p4",
     level: 4,
     difficulty: "apprentice",
-    category: "Ohm's Law",
-    question: "If voltage = 120V and resistance = 60 ohms, what is the current? (I = V/R)",
-    options: ["0.5A", "1A", "2A", "3A"],
+    category: "Circuits",
+    question: "A 120 V source feeds a 60 Ω resistor. What current flows?",
+    options: ["0.5 A", "1 A", "2 A", "3 A"],
     correct: 2,
-    explanation: "Using Ohm's Law: I = V/R = 120V ÷ 60Ω = 2 Amperes. This is the fundamental equation of electrical engineering!",
+    explanation: "Ohm's law: I = V / R = 120 / 60 = 2 A.",
     points: 150,
-    hint: "Divide voltage by resistance",
+    hint: "Divide voltage by resistance.",
   },
   {
     id: "p5",
-    level: 5,
+    level: 4,
     difficulty: "apprentice",
-    category: "Safety",
-    question: "What does a fuse cutout do on a utility pole?",
+    category: "Pole anatomy",
+    question: "What does a fused cutout do?",
     options: [
-      "Boosts voltage during low demand",
-      "Disconnects a circuit when current is too high",
-      "Converts AC to DC power",
-      "Measures power consumption"
+      "Boosts voltage when demand is low",
+      "Opens the circuit when fault current flows",
+      "Converts AC to DC",
+      "Meters energy use",
     ],
     correct: 1,
-    explanation: "A fuse cutout is a protective device. When too much current flows (fault or overload), it opens the circuit to prevent fires and equipment damage.",
+    explanation:
+      "It protects the transformer and the line. When the fuse link melts, the barrel drops open and isolates the fault.",
     points: 150,
   },
+  {
+    id: "p23",
+    level: 5,
+    difficulty: "apprentice",
+    category: "Line design",
+    question: "It's 35 °C and the line is heavily loaded. What happens to the conductor sag?",
+    options: [
+      "It decreases, the wire tightens",
+      "It increases, the wire hangs lower",
+      "Nothing, sag is fixed at install",
+      "It only changes with wind",
+    ],
+    correct: 1,
+    explanation:
+      "Hot conductors expand and hang lower. Designers check ground clearance at the maximum conductor temperature for that reason.",
+    points: 150,
+  },
+
+  // ── Technician ──────────────────────────────────────────────────────────
   {
     id: "p6",
     level: 6,
     difficulty: "technician",
-    category: "Power Formula",
-    question: "A distribution transformer supplies 120V at 20A. What is the power output?",
-    options: ["600W", "1200W", "2400W", "4800W"],
+    category: "Circuits",
+    question: "A load draws 20 A at 120 V. How much power is that?",
+    options: ["600 W", "1,200 W", "2,400 W", "4,800 W"],
     correct: 2,
-    explanation: "Power = Voltage × Current → P = 120V × 20A = 2,400 Watts (2.4 kW). This could power a typical electric stove!",
+    explanation: "P = V × I = 120 × 20 = 2,400 W. That's roughly one large stove element.",
     points: 200,
   },
   {
     id: "p7",
-    level: 7,
+    level: 6,
     difficulty: "technician",
-    category: "Distribution Voltage",
-    question: "Distribution lines commonly run at what voltage for residential areas?",
-    options: ["240V", "480V", "7,200V", "500,000V"],
+    category: "Power systems",
+    question: "Which of these is a typical primary distribution voltage in Western Canada?",
+    options: ["240 V", "600 V", "25 kV", "500 kV"],
     correct: 2,
-    explanation: "Primary distribution lines run at 7,200V (7.2kV). The transformer steps this down to 120/240V for homes. Transmission lines can reach 500kV or more.",
+    explanation:
+      "25 kV class is common across the Prairies. 240 V and 600 V are utilization voltages, and 500 kV is bulk transmission.",
     points: 200,
   },
   {
     id: "p8",
-    level: 8,
+    level: 7,
     difficulty: "technician",
-    category: "Grounding",
-    question: "Why is the neutral wire grounded at every utility pole?",
+    category: "Safety",
+    question: "Why is the system neutral grounded at many points along a distribution line?",
     options: [
-      "To increase voltage",
-      "To provide a safe return path and limit shock hazards",
-      "To prevent lightning strikes",
-      "To boost transmission distance"
+      "To raise the line voltage",
+      "To hold it near earth potential and give fault current a path back",
+      "To stop lightning from striking",
+      "To make the line reach farther",
     ],
     correct: 1,
-    explanation: "Grounding the neutral provides a safe, low-resistance return path for current and keeps the neutral close to earth potential, reducing electric shock risk.",
+    explanation:
+      "A multi-grounded neutral stays close to earth potential, which limits touch voltage and helps protection operate quickly.",
+    points: 200,
+  },
+  {
+    id: "p24",
+    level: 7,
+    difficulty: "technician",
+    category: "Line design",
+    question: "Two wood poles are the same length. One is Class 2 and one is Class 5. Which is stronger?",
+    options: ["Class 5", "Class 2", "They're equal, class is about treatment", "It depends on species only"],
+    correct: 1,
+    explanation:
+      "Lower class numbers mean a larger circumference and a higher rated load. A Class 2 pole carries more than a Class 5.",
+    points: 200,
+    hint: "Think of it like wire gauge.",
+  },
+  {
+    id: "p25",
+    level: 8,
+    difficulty: "technician",
+    category: "Line design",
+    question:
+      "A common rule of thumb sets a pole 10% of its length plus 0.6 m into the ground. How deep for a 12.2 m (40 ft) pole?",
+    options: ["About 1.2 m", "About 1.8 m", "About 2.4 m", "About 3.0 m"],
+    correct: 1,
+    explanation:
+      "10% of 12.2 m is 1.22 m. Add 0.6 m and you get about 1.8 m. Soil conditions can call for more.",
+    points: 200,
+  },
+  {
+    id: "p26",
+    level: 8,
+    difficulty: "technician",
+    category: "Pole anatomy",
+    question: "During normal operation, how does a surge arrester behave?",
+    options: [
+      "Like a closed switch to ground",
+      "Like an open circuit",
+      "Like a small transformer",
+      "Like a fuse in series with the line",
+    ],
+    correct: 1,
+    explanation:
+      "It conducts almost nothing at normal voltage. During a surge its resistance collapses and it clamps the voltage.",
     points: 200,
   },
   {
     id: "p9",
     level: 9,
     difficulty: "technician",
-    category: "Math",
-    question: "A 10kVA transformer operates at 7,200V primary. What is the primary current?",
-    options: ["0.72A", "1.39A", "7.2A", "72A"],
+    category: "Circuits",
+    question: "A 25 kVA single-phase transformer has a 14.4 kV primary. What is the full-load primary current?",
+    options: ["0.58 A", "1.74 A", "17.4 A", "360 A"],
     correct: 1,
-    explanation: "I = kVA / V = 10,000VA ÷ 7,200V ≈ 1.39A. Lower current at higher voltage means less line loss — why we transmit at high voltages!",
+    explanation:
+      "I = S / V = 25,000 / 14,400 ≈ 1.74 A. High voltage means low current, and low current means low line loss.",
     points: 250,
-    hint: "I = apparent power (VA) ÷ voltage",
+    hint: "Current = VA ÷ volts.",
+  },
+  {
+    id: "p27",
+    level: 9,
+    difficulty: "technician",
+    category: "Line design",
+    question: "A line turns 90° at a corner. What kind of structure belongs there?",
+    options: [
+      "A standard tangent pole",
+      "A guyed angle or dead-end structure",
+      "A shorter pole to reduce wind load",
+      "Any pole, direction doesn't matter",
+    ],
+    correct: 1,
+    explanation:
+      "Tangent poles only carry straight-through loads. At a corner the conductor tensions don't cancel, so the pole needs guys.",
+    points: 250,
   },
   {
     id: "p10",
     level: 10,
     difficulty: "technician",
-    category: "AC Power",
-    question: "In a purely resistive circuit, what is the power factor?",
+    category: "Circuits",
+    question: "What is the power factor of a purely resistive load?",
     options: ["0", "0.5", "0.707", "1.0"],
     correct: 3,
-    explanation: "In a purely resistive circuit, voltage and current are in phase, so Power Factor = cos(0°) = 1.0 (unity power factor). No reactive power is consumed.",
+    explanation: "Voltage and current are in phase, so PF = cos 0° = 1.0. There is no reactive power.",
     points: 250,
   },
+
+  // ── Engineer ────────────────────────────────────────────────────────────
   {
     id: "p11",
     level: 11,
     difficulty: "engineer",
-    category: "Voltage Drop",
-    question: "A 100ft run of #12 AWG copper wire carries 15A. Resistance is 0.16 ohms/100ft. What's the voltage drop?",
-    options: ["1.2V", "2.4V", "4.8V", "9.6V"],
+    category: "Circuits",
+    question: "A branch circuit carries 15 A through a total conductor resistance of 0.16 Ω. What is the voltage drop?",
+    options: ["1.2 V", "2.4 V", "4.8 V", "9.6 V"],
     correct: 1,
-    explanation: "Voltage Drop = I × R = 15A × 0.16Ω = 2.4V. This represents a 2% drop on 120V — within the acceptable 3% limit for branch circuits!",
+    explanation: "V = I × R = 15 × 0.16 = 2.4 V, which is 2% of a 120 V circuit.",
     points: 300,
-    hint: "V = I × R (Ohm's Law for voltage drop)",
+    hint: "V = I × R.",
+  },
+  {
+    id: "p28",
+    level: 11,
+    difficulty: "engineer",
+    category: "Line design",
+    question: "Which standard covers the design of overhead lines in Canada?",
+    options: [
+      "CSA C22.1, Canadian Electrical Code Part I",
+      "CSA C22.3 No. 1, Overhead systems",
+      "CSA Z462, Workplace electrical safety",
+      "CSA Z94.3, Eye and face protectors",
+    ],
+    correct: 1,
+    explanation:
+      "CSA C22.3 No. 1 sets clearances, loadings and strength requirements for overhead lines. C22.1 covers building wiring.",
+    points: 300,
+  },
+  {
+    id: "p29",
+    level: 12,
+    difficulty: "engineer",
+    category: "Line design",
+    question: "Wind pushes on a pole and its conductors. Where is the bending stress in an unguyed pole usually highest?",
+    options: ["At the top", "At the crossarm", "Near the ground line", "It's uniform along the pole"],
+    correct: 2,
+    explanation:
+      "The pole acts as a cantilever fixed in the ground. Bending moment grows toward the ground line, where most failures occur.",
+    points: 300,
   },
   {
     id: "p12",
     level: 12,
     difficulty: "engineer",
-    category: "3-Phase",
-    question: "In a balanced 3-phase system, if line voltage is 13.8kV, what is the phase voltage?",
-    options: ["4,600V", "7,967V", "13,800V", "23,900V"],
+    category: "Power systems",
+    question: "A balanced three-phase feeder is 25 kV line-to-line. What is the line-to-ground voltage?",
+    options: ["8.3 kV", "14.4 kV", "25 kV", "43.3 kV"],
     correct: 1,
-    explanation: "Phase voltage = Line voltage ÷ √3 = 13,800V ÷ 1.732 ≈ 7,967V. This relationship is fundamental to 3-phase power distribution.",
+    explanation: "V(line-ground) = V(line-line) ÷ √3 = 25 ÷ 1.732 ≈ 14.4 kV. That's where the 14.4/25 kV rating comes from.",
     points: 350,
-    hint: "Phase V = Line V ÷ √3 (approximately 1.732)",
+    hint: "Divide by √3.",
   },
   {
     id: "p13",
     level: 13,
     difficulty: "engineer",
-    category: "Reactance",
-    question: "An inductor has 10 ohms reactance at 60Hz. What happens to reactance at 120Hz?",
-    options: ["5 ohms (halved)", "10 ohms (same)", "20 ohms (doubled)", "100 ohms (×10)"],
+    category: "Circuits",
+    question: "An inductor has 10 Ω of reactance at 60 Hz. What is its reactance at 120 Hz?",
+    options: ["5 Ω", "10 Ω", "20 Ω", "100 Ω"],
     correct: 2,
-    explanation: "Inductive reactance XL = 2πfL. When frequency doubles, XL doubles. So 10Ω × 2 = 20Ω. This is why power systems stick to 60Hz.",
+    explanation: "X = 2πfL, so reactance scales with frequency. Double the frequency and you get 20 Ω.",
     points: 350,
+  },
+  {
+    id: "p30",
+    level: 13,
+    difficulty: "engineer",
+    category: "Line design",
+    question: "You double a span length and keep the conductor tension the same. What happens to the sag?",
+    options: ["It doubles", "It triples", "It goes up four times", "It stays the same"],
+    correct: 2,
+    explanation:
+      "Sag ≈ wL² / 8T. Sag depends on span length squared, so twice the span gives four times the sag.",
+    points: 350,
+    hint: "Sag varies with the square of the span.",
   },
   {
     id: "p14",
     level: 14,
     difficulty: "engineer",
-    category: "Power Triangle",
-    question: "A motor draws 10kVA at 0.8 power factor. What is the true (real) power?",
-    options: ["6kW", "8kW", "10kW", "12kW"],
+    category: "Circuits",
+    question: "A motor draws 10 kVA at 0.8 power factor. What is the real power?",
+    options: ["6 kW", "8 kW", "10 kW", "12 kW"],
     correct: 1,
-    explanation: "Real Power = Apparent Power × PF = 10kVA × 0.8 = 8kW. The reactive power stresses the wires but does no useful work.",
+    explanation: "P = S × PF = 10 × 0.8 = 8 kW. The remaining 6 kvar loads the conductors without doing work.",
     points: 400,
-    hint: "P = S × cos(θ) where S is apparent power",
+    hint: "P = S × cos θ.",
   },
   {
     id: "p15",
     level: 15,
     difficulty: "engineer",
     category: "Safety",
-    question: "OSHA minimum approach distance for 15kV energized conductors for qualified workers is approximately:",
-    options: ["1 foot 0 inches", "1 foot 7 inches", "2 feet 2 inches", "3 feet 6 inches"],
+    question: "A storm has dropped a power line across the road in front of you. What do you do?",
+    options: [
+      "Move it aside with a dry stick",
+      "Drive over it slowly",
+      "Assume it's live, stay at least 10 m back and call the utility",
+      "Touch it briefly to check if it's energized",
+    ],
     correct: 2,
-    explanation: "OSHA Table S-5 sets minimum approach distances. For 15kV systems, qualified workers must maintain at least 2 feet 2 inches from exposed energized parts.",
+    explanation:
+      "A downed line can be energized with no sparks or sound, and the ground around it can be energized too. Stay back and call it in.",
     points: 400,
   },
+
+  // ── Master ──────────────────────────────────────────────────────────────
   {
     id: "p16",
     level: 16,
     difficulty: "master",
-    category: "Fault Current",
-    question: "A 7,200/120V transformer has 2% impedance and 50kVA rating. Approximate fault current at secondary?",
-    options: ["208A", "2,083A", "20,833A", "41,667A"],
+    category: "Power systems",
+    question:
+      "A 50 kVA, 240 V secondary transformer has 2% impedance. Roughly what is the bolted fault current at its terminals, assuming an infinite source?",
+    options: ["208 A", "2,083 A", "10,417 A", "41,667 A"],
     correct: 2,
-    explanation: "Fault current ≈ rated current ÷ Z% = (50,000VA÷120V) ÷ 0.02 ≈ 20,833A. This is why properly rated breakers and fuses are critical!",
+    explanation:
+      "Rated current is 50,000 / 240 ≈ 208 A. Divide by 0.02 per unit impedance and you get about 10,400 A.",
     points: 500,
-    hint: "I_fault = I_rated ÷ Z(per unit)",
+    hint: "I(fault) = I(rated) ÷ Z(per unit).",
   },
   {
     id: "p17",
     level: 17,
     difficulty: "master",
-    category: "Transmission",
-    question: "Why does doubling transmission voltage reduce line losses by a factor of 4?",
+    category: "Power systems",
+    question: "For the same power delivered, why does doubling the line voltage cut resistive losses to a quarter?",
     options: [
       "Higher voltage means more current",
-      "Loss = I²R; doubling V halves I for same power, so I² drops by 4",
-      "Wire resistance decreases at high voltage",
-      "Higher voltage creates magnetic shielding"
+      "Current halves, and loss is I²R",
+      "Conductor resistance falls at high voltage",
+      "Higher voltage shields the conductor magnetically",
     ],
     correct: 1,
-    explanation: "P_loss = I²R. For constant power (P = VI), doubling voltage halves current. Loss = (I/2)²R = I²R/4. This is why HVDC lines save billions in energy!",
+    explanation: "P = VI, so doubling V halves I. Loss = I²R, and (I/2)² is a quarter of I².",
     points: 500,
   },
   {
     id: "p18",
     level: 18,
     difficulty: "master",
-    category: "Per Unit System",
-    question: "In the per-unit system, a base of 100MVA and 115kV is used. What is the base impedance?",
-    options: ["0.132 ohms", "13.2 ohms", "132.25 ohms", "1,322.5 ohms"],
+    category: "Power systems",
+    question: "On a 100 MVA, 115 kV base, what is the base impedance?",
+    options: ["0.132 Ω", "13.2 Ω", "132.25 Ω", "1,322.5 Ω"],
     correct: 2,
-    explanation: "Z_base = (kV)² ÷ MVA = (115²) ÷ 100 = 13,225 ÷ 100 = 132.25 ohms. Per-unit system normalizes all quantities, making complex network analysis much easier.",
+    explanation: "Z(base) = kV² / MVA = 115² / 100 = 132.25 Ω.",
     points: 600,
-    hint: "Z_base = V²_base / S_base",
+    hint: "Z(base) = kV² ÷ MVA.",
   },
   {
     id: "p19",
     level: 19,
     difficulty: "master",
-    category: "Symmetrical Components",
-    question: "In symmetrical component analysis, a single line-to-ground fault involves which sequence networks?",
+    category: "Power systems",
+    question: "Which sequence networks are involved in a single line-to-ground fault?",
     options: [
-      "Positive sequence only",
-      "Positive and negative sequence in series",
-      "Positive, negative, and zero sequence in series",
-      "Zero sequence only"
+      "Positive only",
+      "Positive and negative, in series",
+      "Positive, negative and zero, in series",
+      "Zero only",
     ],
     correct: 2,
-    explanation: "A single line-to-ground fault involves all three sequence networks (positive, negative, and zero) connected in series — fundamental to protective relay design.",
+    explanation:
+      "All three sequence networks connect in series for a single line-to-ground fault. It's the starting point for ground relay settings.",
     points: 600,
   },
   {
     id: "p20",
     level: 20,
     difficulty: "master",
-    category: "Ultimate Challenge",
-    question: "The skin effect causes current to concentrate near a conductor surface. For copper at 60Hz, skin depth is approximately:",
-    options: ["0.85mm", "8.5mm", "85mm", "850mm"],
+    category: "Power systems",
+    question: "Skin effect pushes AC current toward a conductor's surface. Roughly what is the skin depth of copper at 60 Hz?",
+    options: ["0.85 mm", "8.5 mm", "85 mm", "850 mm"],
     correct: 1,
-    explanation: "Copper skin depth at 60Hz is ~8.5mm. ACSR conductors use a steel core for strength with stranded aluminum for the current path — optimizing for both mechanical and electrical performance!",
+    explanation:
+      "About 8.5 mm. It's one reason large conductors are stranded or built around a core that carries little current.",
     points: 750,
-    hint: "delta = sqrt(rho/(pi × f × mu))",
+    hint: "δ = √(ρ / (π f μ)).",
   },
 ];
 
-export const difficultyConfig = {
-  apprentice: { label: "Apprentice", color: "#22c55e", emoji: "🔧", levels: "1-5" },
-  technician: { label: "Technician", color: "#0ea5e9", emoji: "⚡", levels: "6-10" },
-  engineer: { label: "Engineer", color: "#a855f7", emoji: "🔌", levels: "11-15" },
-  master: { label: "Master", color: "#fbbf24", emoji: "👷", levels: "16-20" },
+export const puzzleById: Record<string, Puzzle> = Object.fromEntries(puzzles.map((p) => [p.id, p]));
+
+export const difficultyConfig: Record<Difficulty, { label: string }> = {
+  apprentice: { label: "Apprentice" },
+  technician: { label: "Technician" },
+  engineer: { label: "Engineer" },
+  master: { label: "Master" },
 };
-
-export const campaigns = [
-  {
-    id: "c1",
-    title: "Spring Safety Challenge",
-    prize: "$250 Gift Card",
-    emoji: "🏆",
-    description: "Answer 10 questions correctly in a row to enter the grand prize drawing!",
-    endsIn: "14 days",
-    entries: 1247,
-    active: true,
-    color: "#fbbf24",
-  },
-  {
-    id: "c2",
-    title: "Master Lineman Quiz",
-    prize: "Pro Tool Kit",
-    emoji: "🔧",
-    description: "Complete all 20 levels without using any hints. Prove you're a true master!",
-    endsIn: "7 days",
-    entries: 423,
-    active: true,
-    color: "#0ea5e9",
-  },
-  {
-    id: "c3",
-    title: "Speed Round Bonus",
-    prize: "Utility Cap + Shirt",
-    emoji: "⏱️",
-    description: "Answer 5 questions in under 30 seconds each. Fastest completion wins merch!",
-    endsIn: "3 days",
-    entries: 891,
-    active: true,
-    color: "#a855f7",
-  },
-];
-
-export const leaderboard = [
-  { rank: 1, name: "Jordan M.", score: 14250, level: 20, badge: "👷 Master", streak: 15 },
-  { rank: 2, name: "Alex R.", score: 12800, level: 19, badge: "⚡ Engineer", streak: 11 },
-  { rank: 3, name: "Sam T.", score: 11500, level: 18, badge: "⚡ Engineer", streak: 9 },
-  { rank: 4, name: "Casey W.", score: 9750, level: 16, badge: "⚡ Engineer", streak: 7 },
-  { rank: 5, name: "Morgan L.", score: 8200, level: 14, badge: "🔌 Technician", streak: 5 },
-  { rank: 6, name: "Riley P.", score: 7100, level: 12, badge: "🔌 Technician", streak: 4 },
-  { rank: 7, name: "Taylor B.", score: 5950, level: 9, badge: "🔧 Technician", streak: 3 },
-  { rank: 8, name: "Quinn A.", score: 4300, level: 7, badge: "🔧 Apprentice", streak: 2 },
-  { rank: 9, name: "Avery S.", score: 3100, level: 5, badge: "🔧 Apprentice", streak: 1 },
-  { rank: 10, name: "Blake K.", score: 2400, level: 4, badge: "🔧 Apprentice", streak: 1 },
-];
