@@ -1,297 +1,355 @@
-import { useState } from "react";
-import { poleComponents, type PoleComponent } from "../data/puzzles";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { poleComponents, poleZones, type PoleComponent } from "../data/puzzles";
+import { webglAvailable } from "./webgl";
+import { Sheet, cx } from "./ui";
 
-export default function PoleExplorer() {
-  const [selected, setSelected] = useState<PoleComponent | null>(null);
+// three.js is big, so it only loads when someone opens this tab.
+const Pole3D = lazy(() => import("./Pole3D"));
 
-  return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: "#fff" }}>
-          Utility Pole Explorer
-        </h2>
-        <p style={{ fontSize: 13, color: "#64748b", margin: "4px 0 0" }}>
-          Tap any component to learn how it works
-        </p>
-      </div>
+const INK = "#cbd5e1";
+const NIGHT = "#0a0f1e";
+const HAZARD = "#fbbf24";
+const POLE = "#92400e";
+const STEEL = "#334155";
 
-      {/* SVG Pole Diagram */}
-      <div style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-      }}>
-        <div style={{ fontSize: 11, color: "#64748b", textAlign: "center", marginBottom: 8, letterSpacing: 2, fontWeight: 600 }}>
-          INTERACTIVE POLE DIAGRAM
-        </div>
-        <PoleDiagram selected={selected} onSelect={setSelected} />
-      </div>
+// Where each balloon sits, and where its leader line lands on the drawing.
+const BALLOONS: Record<string, { bx: number; by: number; tx: number; ty: number }> = {
+  insulator: { bx: 22, by: 40, tx: 80, ty: 60 },
+  crossarm: { bx: 298, by: 40, tx: 246, ty: 72 },
+  arrester: { bx: 298, by: 88, tx: 186, ty: 100 },
+  fuse: { bx: 298, by: 124, tx: 209, ty: 120 },
+  transformer: { bx: 298, by: 184, tx: 215, ty: 184 },
+  neutral: { bx: 22, by: 226, tx: 34, ty: 250 },
+  streetlight: { bx: 298, by: 268, tx: 232, ty: 284 },
+  cablecom: { bx: 22, by: 352, tx: 34, ty: 328 },
+  guy: { bx: 22, by: 150, tx: 132, ty: 152 },
+};
 
-      {/* Selected Component Info */}
-      {selected && (
-        <div style={{
-          background: "rgba(255,255,255,0.04)",
-          border: `2px solid ${selected.color}`,
-          borderRadius: 16,
-          padding: 20,
-          marginBottom: 16,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-            <div style={{
-              width: 48, height: 48, borderRadius: "50%",
-              background: `${selected.color}22`,
-              border: `2px solid ${selected.color}`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 22,
-            }}>
-              {selected.emoji}
-            </div>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>{selected.name}</div>
-              {selected.voltage && (
-                <span style={{
-                  display: "inline-block", marginTop: 4,
-                  background: "rgba(251,191,36,0.15)", color: "#fbbf24",
-                  padding: "2px 8px", borderRadius: 100, fontSize: 12, fontWeight: 600,
-                }}>
-                  {selected.voltage}
-                </span>
-              )}
-            </div>
-          </div>
-          <p style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.6, margin: "0 0 12px" }}>
-            {selected.description}
-          </p>
-          <div style={{
-            background: "rgba(251,191,36,0.06)",
-            border: "1px solid rgba(251,191,36,0.15)",
-            borderRadius: 10,
-            padding: "10px 14px",
-            display: "flex",
-            gap: 10,
-            alignItems: "flex-start",
-          }}>
-            <span style={{ fontSize: 18 }}>💡</span>
-            <div>
-              <div style={{ fontSize: 11, color: "#fbbf24", fontWeight: 700, marginBottom: 2 }}>FUN FACT</div>
-              <div style={{ fontSize: 13, color: "#d1a226", lineHeight: 1.4 }}>{selected.funFact}</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Component Grid */}
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700, marginBottom: 10, letterSpacing: 1 }}>
-          ALL COMPONENTS
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {poleComponents.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setSelected(c)}
-              style={{
-                background: selected?.id === c.id ? `${c.color}15` : "rgba(255,255,255,0.04)",
-                border: `2px solid ${selected?.id === c.id ? c.color : "rgba(255,255,255,0.07)"}`,
-                borderRadius: 12,
-                padding: "12px 14px",
-                cursor: "pointer",
-                textAlign: "left",
-                transition: "all 0.2s",
-                transform: selected?.id === c.id ? "scale(1.02)" : "scale(1)",
-              }}
-            >
-              <div style={{ fontSize: 20, marginBottom: 4 }}>{c.emoji}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{c.name}</div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Quick reference card */}
-      <div style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: 16,
-        padding: 20,
-        marginTop: 16,
-      }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "#fbbf24", marginBottom: 12 }}>
-          ⚡ Pole Zone Reference
-        </div>
-        {[
-          { zone: "Top Zone", color: "#ef4444", items: "Transmission wires (69kV+)" },
-          { zone: "Supply Space", color: "#f59e0b", items: "Primary distribution (4–35kV)" },
-          { zone: "Transformer Zone", color: "#fbbf24", items: "Step-down units, cutouts, arresters" },
-          { zone: "Secondary Space", color: "#0ea5e9", items: "Service lines (120/240V)" },
-          { zone: "Neutral Wire", color: "#6b7280", items: "Return path (grounded)" },
-          { zone: "Comm Space", color: "#34d399", items: "Cable, phone, fiber (lowest)" },
-        ].map((z) => (
-          <div key={z.zone} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "center" }}>
-            <div style={{ width: 10, height: 10, borderRadius: "50%", background: z.color, flexShrink: 0 }} />
-            <div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{z.zone}: </span>
-              <span style={{ fontSize: 13, color: "#64748b" }}>{z.items}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function PoleDiagram({ selected, onSelect }: {
-  selected: PoleComponent | null;
-  onSelect: (c: PoleComponent) => void;
+export function PoleDiagram({
+  selectedId,
+  onSelect,
+  className,
+}: {
+  selectedId?: string | null;
+  /** Leave out for a static illustration. */
+  onSelect?: (c: PoleComponent) => void;
+  className?: string;
 }) {
-  const compMap: Record<string, PoleComponent> = {};
-  for (const c of poleComponents) compMap[c.id] = c;
+  const sel = (id: string) => selectedId === id;
+  const fill = (id: string, base: string) => (sel(id) ? HAZARD : base);
+  const interactive = Boolean(onSelect);
 
-  const isSel = (id: string) => selected?.id === id;
+  const group = (id: string) => {
+    const c = poleComponents.find((p) => p.id === id)!;
+    if (!interactive) return {};
+    return {
+      role: "button" as const,
+      tabIndex: 0,
+      "aria-label": `Item ${c.item}: ${c.name}`,
+      "aria-pressed": sel(id),
+      style: { cursor: "pointer" },
+      onClick: () => onSelect!(c),
+      onKeyDown: (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect!(c);
+        }
+      },
+    };
+  };
+
+  const line = { stroke: INK, strokeWidth: 2, fill: "none", strokeLinecap: "round" as const };
 
   return (
-    <svg viewBox="0 0 320 460" style={{ width: "100%", maxHeight: 380 }}>
-      <defs>
-        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0a0f1e" />
-          <stop offset="100%" stopColor="#0f1a2e" />
-        </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-          <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-      <rect width="320" height="460" fill="url(#sky)" rx="8" />
-
-      {/* Stars */}
-      {[30, 80, 140, 200, 260, 290, 50, 170, 230, 110, 300].map((x, i) => (
-        <circle key={i} cx={x} cy={i * 5 + 8} r="1.2" fill="white" opacity={0.3 + (i % 3) * 0.1} />
+    <svg
+      viewBox="0 0 320 420"
+      className={className}
+      role={interactive ? "group" : "img"}
+      aria-label="Drawing of a distribution pole with nine numbered items"
+    >
+      {/* Ground line with hatching */}
+      <line x1="0" y1="392" x2="320" y2="392" stroke={INK} strokeWidth="2" />
+      {Array.from({ length: 17 }).map((_, i) => (
+        <line key={i} x1={i * 20 + 4} y1="392" x2={i * 20 - 6} y2="404" stroke={INK} strokeWidth="1" opacity="0.45" />
       ))}
 
-      {/* Main pole */}
-      <rect x="152" y="30" width="16" height="400" fill="#92400e" rx="2" />
-      <rect x="153" y="30" width="4" height="400" fill="#b45309" rx="1" opacity="0.4" />
-
-      {/* Ground */}
-      <rect x="0" y="420" width="320" height="40" fill="#0d1f35" rx="0" />
-      <ellipse cx="160" cy="428" rx="45" ry="9" fill="#1e3a5f" />
-
-      {/* Cross arm */}
-      <g style={{ cursor: "pointer" }} onClick={() => onSelect(compMap.crossarm)}>
-        <rect x="60" y="76" width="200" height="12"
-          fill={isSel("crossarm") ? "#a78bfa" : "#5b21b6"}
-          rx="2"
-          filter={isSel("crossarm") ? "url(#glow)" : undefined}
-        />
-        {/* Insulators */}
-        {[82, 160, 238].map((x, i) => (
-          <g key={i} style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); onSelect(compMap.insulator); }}>
-            <ellipse cx={x} cy="74" rx="9" ry="5"
-              fill={isSel("insulator") ? "#38bdf8" : "#0369a1"}
-              filter={isSel("insulator") ? "url(#glow)" : undefined}
-            />
-            <ellipse cx={x} cy="71" rx="7" ry="4" fill={isSel("insulator") ? "#7dd3fc" : "#0284c7"} />
-          </g>
-        ))}
-
-        {/* High voltage wires */}
-        <line x1="0" y1="68" x2="82" y2="68" stroke="#fbbf24" strokeWidth="2.5" opacity="0.9" />
-        <line x1="82" y1="68" x2="320" y2="74" stroke="#fbbf24" strokeWidth="2.5" opacity="0.9" />
-        <line x1="0" y1="69" x2="160" y2="67" stroke="#f59e0b" strokeWidth="2" opacity="0.7" />
-        <line x1="0" y1="75" x2="238" y2="68" stroke="#fbbf24" strokeWidth="2" opacity="0.6" />
+      {/* Guy and anchor */}
+      <g {...group("guy")}>
+        <line x1="154" y1="84" x2="52" y2="392" stroke="transparent" strokeWidth="26" />
+        <line x1="154" y1="84" x2="52" y2="392" stroke={sel("guy") ? HAZARD : INK} strokeWidth={sel("guy") ? 5 : 2} />
+        <line x1="154" y1="84" x2="52" y2="392" stroke={INK} strokeWidth="1.5" strokeDasharray="1 5" />
+        <path d="M44 392 l8 10 l8 -10" {...line} />
       </g>
 
-      {/* Lightning arrester */}
-      <g style={{ cursor: "pointer" }} onClick={() => onSelect(compMap.arrester)}>
-        <rect x="176" y="96" width="14" height="30"
-          fill={isSel("arrester") ? "#fde68a" : "#d97706"}
-          rx="3"
-          filter={isSel("arrester") ? "url(#glow)" : undefined}
-        />
-        <line x1="183" y1="126" x2="183" y2="158" stroke="#374151" strokeWidth="1.5" strokeDasharray="4 3" />
-        <text x="196" y="112" fontSize="10" fill="#fbbf24" opacity="0.9">ARR</text>
+      {/* Communication cables */}
+      <g {...group("cablecom")}>
+        <rect x="0" y="312" width="320" height="34" fill="transparent" />
+        <path d="M0 322 Q160 330 320 322" {...line} strokeWidth={sel("cablecom") ? 5 : 3} stroke={sel("cablecom") ? HAZARD : INK} />
+        <path d="M0 334 Q160 342 320 334" {...line} strokeWidth="1.5" strokeDasharray="6 4" />
+      </g>
+
+      {/* Neutral and secondary */}
+      <g {...group("neutral")}>
+        <rect x="0" y="238" width="320" height="34" fill="transparent" />
+        <path d="M0 248 Q160 254 320 248" {...line} strokeWidth={sel("neutral") ? 5 : 2} stroke={sel("neutral") ? HAZARD : INK} />
+        <path d="M0 260 Q160 267 320 260" {...line} strokeWidth="3" />
+      </g>
+
+      {/* Pole */}
+      <rect x="154" y="34" width="12" height="372" fill={POLE} stroke={INK} strokeWidth="2" />
+      <rect x="156" y="150" width="8" height="12" fill={STEEL} stroke={INK} strokeWidth="1" />
+
+      {/* Primary conductors (behind insulators) */}
+      <path d="M0 56 Q80 62 85 60 Q200 66 320 56" {...line} />
+      <path d="M0 30 Q150 36 160 30 Q240 36 320 30" {...line} />
+      <path d="M0 60 Q200 66 235 60 Q290 62 320 58" {...line} />
+
+      {/* Crossarm */}
+      <g {...group("crossarm")}>
+        <rect x="66" y="62" width="188" height="24" fill="transparent" />
+        <rect x="70" y="70" width="180" height="9" fill={fill("crossarm", "#8a5a2e")} stroke={INK} strokeWidth="2" />
+        <path d="M110 79 L154 104 M210 79 L166 104" {...line} strokeWidth="1.5" />
+      </g>
+
+      {/* Insulators */}
+      <g {...group("insulator")}>
+        {[
+          [85, 70],
+          [160, 34],
+          [235, 70],
+        ].map(([x, y]) => (
+          <g key={x}>
+            <rect x={x - 16} y={y - 22} width="32" height="26" fill="transparent" />
+            <path
+              d={`M${x - 8} ${y} h16 l-2 -4 h-12 z M${x - 6} ${y - 4} h12 l-2 -4 h-8 z`}
+              fill={fill("insulator", "#1e293b")}
+              stroke={INK}
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+          </g>
+        ))}
+      </g>
+
+      {/* Surge arrester */}
+      <g {...group("arrester")}>
+        <rect x="168" y="92" width="24" height="44" fill="transparent" />
+        <path d="M181 60 V96" {...line} strokeWidth="1.5" />
+        <rect x="176" y="96" width="10" height="32" rx="2" fill={fill("arrester", "#1e293b")} stroke={INK} strokeWidth="2" />
+        <path d="M174 104 h14 M174 112 h14 M174 120 h14" {...line} strokeWidth="1.5" />
+      </g>
+
+      {/* Fused cutout */}
+      <g {...group("fuse")}>
+        <rect x="192" y="96" width="24" height="46" fill="transparent" />
+        <path d="M166 112 H198" {...line} strokeWidth="1.5" />
+        <path d="M198 104 v30" {...line} strokeWidth="3" />
+        <path d="M200 104 L208 132" stroke={sel("fuse") ? HAZARD : INK} strokeWidth={sel("fuse") ? 6 : 4} strokeLinecap="round" />
+        <path d="M204 134 V150" {...line} strokeWidth="1.5" />
       </g>
 
       {/* Transformer */}
-      <g style={{ cursor: "pointer" }} onClick={() => onSelect(compMap.transformer)}>
-        <rect x="128" y="158" width="64" height="72"
-          fill={isSel("transformer") ? "#fbbf24" : "#b45309"}
-          rx="6"
-          filter={isSel("transformer") ? "url(#glow)" : undefined}
-        />
-        <rect x="136" y="166" width="48" height="56" fill={isSel("transformer") ? "#fde68a" : "#d97706"} rx="4" />
-        <text x="160" y="198" textAnchor="middle" fontSize="12" fill="#1a0a00" fontWeight="bold">TX</text>
-        <text x="160" y="214" textAnchor="middle" fontSize="8" fill="#431407">7.2kV→240V</text>
-        {[125, 129, 133].map((x, i) => (
-          <rect key={i} x={x} y="163" width="2" height="62" fill="#92400e" rx="1" opacity="0.5" />
-        ))}
-      </g>
-
-      {/* Fuse cutout */}
-      <g style={{ cursor: "pointer" }} onClick={() => onSelect(compMap.fuse)}>
-        <rect x="103" y="168" width="17" height="38"
-          fill={isSel("fuse") ? "#fca5a5" : "#b91c1c"}
-          rx="4"
-          filter={isSel("fuse") ? "url(#glow)" : undefined}
-        />
-        <line x1="111.5" y1="168" x2="111.5" y2="206" stroke={isSel("fuse") ? "#fff" : "#fecaca"} strokeWidth="1.5" />
-        <text x="88" y="190" fontSize="8" fill="#ef4444" opacity="0.8">FUSE</text>
+      <g {...group("transformer")}>
+        <rect x="170" y="150" width="46" height="68" rx="6" fill={fill("transformer", STEEL)} stroke={INK} strokeWidth="2" />
+        <path d="M170 164 h46 M170 204 h46" {...line} strokeWidth="1.5" />
+        <path d="M182 150 v-8 h8 v8 M200 150 v-8 h8 v8" {...line} strokeWidth="1.5" />
+        <text x="193" y="189" textAnchor="middle" fontSize="11" fontWeight="600" fill={sel("transformer") ? NIGHT : INK} fontFamily="Barlow Condensed, sans-serif">
+          25 kVA
+        </text>
+        <path d="M193 218 V248" {...line} strokeWidth="1.5" />
       </g>
 
       {/* Street light */}
-      <g style={{ cursor: "pointer" }} onClick={() => onSelect(compMap.streetlight)}>
-        <rect x="60" y="98" width="42" height="5" fill="#374151" rx="2" />
-        <rect x="62" y="78" width="3" height="26" fill="#4b5563" />
-        <ellipse cx="70" cy="75" rx="14" ry="8"
-          fill={isSel("streetlight") ? "#fef08a" : "#fde68a"}
-          filter={isSel("streetlight") ? "url(#glow)" : undefined}
-        />
-        {isSel("streetlight") && (
-          <ellipse cx="70" cy="75" rx="20" ry="14" fill="#fbbf24" opacity="0.08" />
-        )}
-        <text x="70" y="78" textAnchor="middle" fontSize="9" fill="#92400e">LIGHT</text>
+      <g {...group("streetlight")}>
+        <rect x="166" y="270" width="72" height="30" fill="transparent" />
+        <path d="M166 290 Q200 270 222 280" {...line} />
+        <path d="M214 280 h22 l-3 8 h-16 z" fill={fill("streetlight", "#1e293b")} stroke={INK} strokeWidth="2" strokeLinejoin="round" />
       </g>
 
-      {/* Neutral wire area */}
-      <g style={{ cursor: "pointer" }} onClick={() => onSelect(compMap.neutral)}>
-        <line x1="0" y1="262" x2="320" y2="266"
-          stroke={isSel("neutral") ? "#cbd5e1" : "#64748b"}
-          strokeWidth="3"
-          filter={isSel("neutral") ? "url(#glow)" : undefined}
-        />
-        <line x1="0" y1="272" x2="320" y2="276" stroke={isSel("neutral") ? "#94a3b8" : "#475569"} strokeWidth="2.5" />
-        <text x="270" y="258" fontSize="8" fill="#64748b">NEUTRAL</text>
-      </g>
-
-      {/* Communication lines */}
-      <g style={{ cursor: "pointer" }} onClick={() => onSelect(compMap.cablecom)}>
-        <line x1="0" y1="342" x2="320" y2="346"
-          stroke={isSel("cablecom") ? "#4ade80" : "#16a34a"}
-          strokeWidth="2.5"
-          filter={isSel("cablecom") ? "url(#glow)" : undefined}
-        />
-        <line x1="0" y1="352" x2="320" y2="356" stroke={isSel("cablecom") ? "#34d399" : "#15803d"} strokeWidth="2" />
-        <text x="248" y="338" fontSize="8" fill="#22c55e">CABLE/COMM</text>
-      </g>
-
-      {/* Zone labels */}
-      <text x="6" y="82" fontSize="8" fill="#fbbf24" opacity="0.6">PRIMARY 7.2kV</text>
-      <text x="6" y="268" fontSize="8" fill="#64748b">SECONDARY/NEUTRAL</text>
-      <text x="6" y="356" fontSize="8" fill="#22c55e">COMMUNICATION</text>
-
-      {/* Tap hint */}
-      {!selected && (
-        <text x="160" y="448" textAnchor="middle" fontSize="11" fill="#475569">
-          Tap a component to learn more
-        </text>
-      )}
-      {selected && (
-        <text x="160" y="448" textAnchor="middle" fontSize="11" fill="#fbbf24">
-          {selected.name} selected
-        </text>
-      )}
+      {/* Balloons and leaders */}
+      {poleComponents.map((c) => {
+        const b = BALLOONS[c.id];
+        const on = sel(c.id);
+        const dx = b.tx - b.bx;
+        const dy = b.ty - b.by;
+        const len = Math.hypot(dx, dy) || 1;
+        const sx = b.bx + (dx / len) * 12;
+        const sy = b.by + (dy / len) * 12;
+        return (
+          <g key={c.id} onClick={interactive ? () => onSelect!(c) : undefined} style={interactive ? { cursor: "pointer" } : undefined} aria-hidden>
+            <line x1={sx} y1={sy} x2={b.tx} y2={b.ty} stroke={INK} strokeWidth="1" />
+            <circle cx={b.tx} cy={b.ty} r="1.8" fill={INK} />
+            <circle cx={b.bx} cy={b.by} r="22" fill="transparent" />
+            <g className={on ? "balloon-selected" : undefined}>
+              <circle cx={b.bx} cy={b.by} r="12" fill={on ? HAZARD : "#1e293b"} stroke={INK} strokeWidth="2" />
+              <text x={b.bx} y={b.by + 5} textAnchor="middle" fontSize="14" fontWeight="700" fill={on ? NIGHT : INK} fontFamily="Barlow Condensed, sans-serif">
+                {c.item}
+              </text>
+            </g>
+          </g>
+        );
+      })}
     </svg>
+  );
+}
+
+const TOUR_SECONDS = 6;
+
+export default function PoleExplorer() {
+  const [selected, setSelected] = useState<PoleComponent | null>(null);
+  const [touring, setTouring] = useState(false);
+  const [touched, setTouched] = useState(false);
+  const [canRender3D] = useState(webglAvailable);
+
+  // The tour: fly to each component in turn, then pull back out.
+  useEffect(() => {
+    if (!touring) return;
+    const timer = setTimeout(() => {
+      const i = selected ? poleComponents.findIndex((c) => c.id === selected.id) : -1;
+      const next = poleComponents[i + 1];
+      if (next) setSelected(next);
+      else {
+        setSelected(null);
+        setTouring(false);
+      }
+    }, TOUR_SECONDS * 1000);
+    return () => clearTimeout(timer);
+  }, [touring, selected]);
+
+  const stage = useRef<HTMLDivElement>(null);
+
+  function pick(c: PoleComponent | null) {
+    setTouring(false);
+    setSelected(c);
+    // Keep the 3D view on screen so the fly-in is never missed.
+    if (c) stage.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+
+  const overlayButton =
+    "min-h-10 rounded-full border border-edge bg-night/80 px-3.5 text-[14px] font-semibold backdrop-blur";
+
+  return (
+    <div className="space-y-4">
+      <header>
+        <h1 className="font-display text-[34px] font-bold leading-none">🔍 Explore the pole</h1>
+        <p className="mt-1 text-ink-soft">Tap a part to fly in and watch it work. Everything here turns up in the quiz.</p>
+      </header>
+
+      <div
+        ref={stage}
+        className="relative h-[min(52dvh,460px)] scroll-mt-20 overflow-hidden rounded-2xl border-2 border-edge bg-night"
+      >
+        {canRender3D ? (
+          <Suspense fallback={<p className="p-6 text-ink-soft">⚡ Raising the pole.</p>}>
+            <Pole3D
+              className="absolute inset-0"
+              selectedId={selected?.id ?? null}
+              onSelect={(id) => pick(poleComponents.find((c) => c.id === id) ?? null)}
+              onUserMove={() => {
+                setTouched(true);
+                setTouring(false);
+              }}
+            />
+          </Suspense>
+        ) : (
+          <PoleDiagram selectedId={selected?.id} onSelect={pick} className="mx-auto block h-full" />
+        )}
+
+        {canRender3D && (
+          <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2.5">
+            <div className="pointer-events-auto flex gap-2">
+              <button
+                className={cx(overlayButton, touring && "border-hazard text-hazard")}
+                onClick={() => {
+                  if (touring) return setTouring(false);
+                  setSelected(poleComponents[0]);
+                  setTouring(true);
+                }}
+              >
+                {touring ? "⏹ Stop tour" : "🎬 Play tour"}
+              </button>
+              {selected && (
+                <button className={overlayButton} onClick={() => pick(null)}>
+                  ↩ Whole pole
+                </button>
+              )}
+            </div>
+            {!touched && !selected && (
+              <span className="rounded-full bg-night/80 px-3 py-2 text-[13px] text-ink-soft backdrop-blur">
+                👆 Drag to spin, pinch to zoom
+              </span>
+            )}
+          </div>
+        )}
+
+        {selected && (
+          <div
+            key={selected.id}
+            aria-live="polite"
+            className="rise pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-night via-night/85 to-transparent px-4 pb-3 pt-10"
+          >
+            <p className="font-display text-[28px] font-bold leading-tight">
+              <span className="pop">{selected.emoji}</span> {selected.name}
+            </p>
+            <p className="text-[15px] text-hazard">{selected.motion}</p>
+            {touring && (
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-edge">
+                <div className="tour-bar h-full bg-hazard" style={{ animationDuration: `${TOUR_SECONDS}s` }} />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1" role="group" aria-label="Pole parts">
+        {poleComponents.map((c) => {
+          const on = selected?.id === c.id;
+          return (
+            <button
+              key={c.id}
+              onClick={() => pick(on ? null : c)}
+              aria-pressed={on}
+              className={cx(
+                "flex min-h-[76px] w-[104px] shrink-0 snap-start flex-col items-center justify-center gap-1 rounded-xl border-2 px-1.5 py-2 text-center transition-transform active:scale-95",
+                on ? "border-hazard bg-hazard/15" : "border-line bg-sheet",
+              )}
+            >
+              <span className="text-[24px] leading-none">{c.emoji}</span>
+              <span className="text-[13px] font-semibold leading-tight">{c.name}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {selected && (
+        <Sheet key={selected.id} className="rise border-hazard">
+          <div className="flex items-center gap-3">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-hazard bg-hazard/15 text-[24px]">
+              {selected.emoji}
+            </span>
+            <div>
+              <h2 className="font-display text-[26px] font-bold leading-tight">{selected.name}</h2>
+              <p className="text-[14px] text-ink-soft">{selected.zone} space</p>
+            </div>
+          </div>
+          <p className="mt-3">{selected.description}</p>
+          <p className="mt-3 rounded-lg border border-hazard/25 bg-hazard/10 px-3 py-2 text-[15px] text-hazard">
+            💡 {selected.detail}
+          </p>
+        </Sheet>
+      )}
+
+      <Sheet>
+        <h2 className="font-display text-[20px] font-semibold">⚡ Spaces on the pole, top to bottom</h2>
+        <dl className="mt-2 space-y-1.5 text-[15px]">
+          {poleZones.map((z) => (
+            <div key={z.zone} className="flex gap-3">
+              <dt className="w-32 shrink-0 font-semibold">{z.zone}</dt>
+              <dd className="text-ink-soft">{z.text}</dd>
+            </div>
+          ))}
+        </dl>
+      </Sheet>
+    </div>
   );
 }

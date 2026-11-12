@@ -41,25 +41,82 @@ Use it as an icebreaker — project the leaderboard on a screen at a mixer or in
 
 ## How It Works
 
-1. **Scan** — visitor scans the QR code or taps the NFC tag
-2. **Register** — enters name and email (30 seconds max); phone, school, grad year, and area of interest are optional
-3. **Play** — answers multiple-choice engineering questions under a 30-second timer; earns points for correct answers, speed bonuses, and streaks
-4. **Compete** — live leaderboard updates in real time across all devices at the event
-5. **Unlock** — at 500 points, a "Submit Resume" button unlocks; the PDF uploads directly to secure cloud storage
-6. **Win** — prize campaigns reward top performers, creating ongoing engagement
+1. **Scan**: the visitor scans the QR code or taps the NFC tag
+2. **Sign up**: name, email and one consent tick. Nothing else is asked up front
+3. **Play**: rounds of 5 multiple-choice questions, 30 seconds each
+4. **Profile**: after the first round, school, program, grad year and what they're looking for, for a 100 point bonus
+5. **Unlock**: at 500 points, résumé drop-off and the prize draw open
+6. **Follow-up**: an explicit yes or no to being contacted, plus optional LinkedIn and phone
+
+Each ask shows up when the player has a reason to answer it, one at a time. The Rewards tab lists all of them.
 
 ---
 
 ## Scoring System
 
+All scoring runs on the server (`convex/attempts.ts`, rules in `src/data/scoring.ts`). The browser sends the answer, never the points.
+
 | Action | Points |
 |---|---|
-| Correct answer | 100–750 pts (varies by difficulty) |
-| Speed bonus | +3 pts per second remaining |
-| Streak bonus (3+ in a row) | +25% on top of base points |
-| Level up (every 3 correct) | Unlocks harder questions |
+| Correct answer | 100 to 750 pts by difficulty |
+| Speed bonus | +3 pts per second remaining (not with a hint) |
+| Streak bonus (3+ in a row) | +25% of base points |
+| Completed profile | +100 pts, once |
+| Repeat of a solved question | 0 pts (practice) |
 
-Resume submission unlocks at **500 points**.
+---
+
+## 3D Pole Explorer
+
+The Explore tab is a 3D pole built from three.js primitives (`src/components/Pole3D.tsx`, no model files). Drag to orbit, pinch or scroll to zoom, two fingers to pan. Tapping a part flies the camera in and plays its animation: the cutout drops open, lightning hits the arrester, current runs through the transformer. "Play tour" visits every part in turn. The 3D code loads only when the tab is opened, and falls back to a 2D drawing if WebGL isn't available.
+
+---
+
+## What Gets Captured
+
+| Data | When | Where |
+|---|---|---|
+| Name, email | Sign-up | `players` |
+| Consent timestamp and wording version | Sign-up | `players.consentAt`, `consentVersion` |
+| Event and entry point | From the link: `?e=usask-fair&src=qr` | `players.eventCode`, `source` |
+| School, program, grad year, looking for | After round 1 | `players` |
+| Interest area, LinkedIn, phone, follow-up yes/no | Follow-up step | `players` |
+| Every answer: question, category, right or wrong, time, hint used | During play | `quizAttempts` |
+| Résumé file | At 500 pts | `resumes` + Convex Storage |
+| Prize draw entry code | At 500 pts | `drawEntries` |
+
+Signing up twice with the same email returns the same player, so one person is one lead.
+
+Other players only ever see a first name and last initial. Emails, phone numbers and player ids are never sent to another browser.
+
+---
+
+## Pages
+
+| URL | What it is |
+|---|---|
+| `/` | The game, built for phones |
+| `/#/screen` | Booth TV: QR code and live board. Add `?e=your-event` before the `#` to tag sign-ups |
+| `/#/recruiter` | Leads table with search, filters and CSV export |
+
+The recruiter page needs a passcode. Set it once:
+
+```bash
+npx convex env set ADMIN_KEY "pick-a-long-passcode"
+```
+
+With no `ADMIN_KEY` set, the page returns nothing. This is booth-grade protection. Put real auth in front of it before the data set gets big or long-lived.
+
+---
+
+## Before an Event
+
+- [ ] Edit `src/branding.ts`: company name in the consent line, privacy contact, prize draw details (or `enabled: false`)
+- [ ] If you change the consent wording, bump `CONSENT_VERSION`
+- [ ] Have an engineer read through `src/data/puzzles.ts`
+- [ ] Print a QR link per entry point, e.g. `?e=usask-fair&src=qr` and `?e=usask-fair&src=nfc`
+- [ ] Set `ADMIN_KEY`, open `/#/recruiter` and export once as a test
+- [ ] If there is a prize, write the draw rules and check contest requirements for your province
 
 ---
 
@@ -68,7 +125,7 @@ Resume submission unlocks at **500 points**.
 | Layer | Technology |
 |---|---|
 | Frontend | React 19 + TypeScript + Vite |
-| Styling | Tailwind CSS v4 + inline styles |
+| Styling | Tailwind CSS v4 |
 | Backend / DB | Convex (real-time, serverless) |
 | File storage | Convex Storage (resume uploads) |
 | Hosting | Vercel (auto-deploy from GitHub) |
@@ -88,58 +145,42 @@ npx convex dev
 npm run dev
 ```
 
+No Convex account handy? `npm run demo` runs the whole app against sample data kept in the browser (`src/demo/convexReact.tsx`). The recruiter passcode in demo mode is `demo`.
+
 Open `http://localhost:5173`.
 
 ## Production Deploy
 
-```bash
-# Deploy Convex schema + functions to cloud
-npx convex deploy
+Vercel deploys the backend and the frontend together. The build command in `vercel.json` is:
 
-# Add VITE_CONVEX_URL to Vercel environment variables
-# Then push to GitHub — Vercel auto-deploys
+```bash
+npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name VITE_CONVEX_URL
 ```
+
+It pushes the Convex schema and functions first, then builds the site against that deployment. If the Convex step fails, the build fails and the previous version stays live, so the two can't drift apart.
+
+One-time setup:
+
+1. Convex dashboard → your project → Settings → generate a **Production deploy key**
+2. Vercel → Project → Settings → Environment Variables → add `CONVEX_DEPLOY_KEY` with that key, **Production** environment only
+3. `npx convex env set ADMIN_KEY "pick-a-long-passcode"` for the recruiter page
+4. Push to `master`, or hit Redeploy in Vercel
 
 ---
 
 ## Customising for a Specific Company
 
-All brand-facing copy and colors live in one file: [src/branding.ts](src/branding.ts)
-
-```ts
-export const BRAND = {
-  appName: "Power Grid Challenge",
-  tagline: "⚡ UTILITY POLE ENGINEERING ⚡",
-  subtitle: "Learn. Solve. Win. Master the grid.",
-  accentColor: "#fbbf24",
-  bgColor: "#0a0f1e",
-};
-
-export const RESUME_UNLOCK_THRESHOLD = 500;
-```
-
-Change the name, colors, and threshold here and it propagates everywhere. No other files need touching for a basic rebrand.
-
----
-
-## Recruiter View
-
-The [Convex Dashboard](https://dashboard.convex.dev) is the recruiter view for the demo. You can see:
-
-- Every registered player (name, email, school, grad year, role interest)
-- Quiz attempt history per player
-- Submitted resumes (downloadable from Convex Storage)
-- Live score updates
-
-A dedicated recruiter admin UI is a planned future phase.
+Copy, consent wording, thresholds, prize draw and the profile choices live in [src/branding.ts](src/branding.ts). Colours and type live at the top of [src/index.css](src/index.css). Questions and pole items live in [src/data/puzzles.ts](src/data/puzzles.ts).
 
 ---
 
 ## Roadmap
 
-- [ ] Recruiter admin dashboard (filter/export leads, view resumes)
-- [ ] Email notification on resume submission
-- [ ] Magic-link return login (so students can continue on a different device)
-- [ ] Anti-cheat detection
+- [x] Recruiter view (filter and export leads, open résumés)
+- [x] Server-side scoring
+- [ ] Real sign-in for the recruiter view
+- [ ] Email notification on résumé submission
+- [ ] Magic-link return login. Today, entering a registered email resumes that player with no verification
+- [ ] Keep the answer key off the client
 - [ ] Company rebrand pass (swap logo, colors, quiz content)
 - [ ] Next.js migration (if SSR, SEO, or server actions become needed)
