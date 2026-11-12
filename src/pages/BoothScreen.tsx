@@ -27,18 +27,18 @@ export default function BoothScreen() {
         <p className="font-display text-[28px] font-bold">{BRAND.appName}</p>
         <h1 className="font-display mt-2 text-[clamp(44px,6vw,92px)] font-bold leading-[0.92]">{BRAND.headline}</h1>
         <div className="mt-8 flex items-center gap-6">
-          <div className="rounded-md border-4 border-ink bg-sheet p-3">
-            <QRCodeSVG value={url} size={220} fgColor="#0f1b2d" bgColor="#fbfcfd" level="M" />
+          <div className="rounded-xl border-4 border-hazard bg-white p-3">
+            <QRCodeSVG value={url} size={220} fgColor="#0a0f1e" bgColor="#ffffff" level="M" />
           </div>
           <p className="max-w-[16ch] text-[clamp(20px,2vw,30px)] font-semibold leading-tight">
-            Scan to play. {RESUME_UNLOCK_THRESHOLD} points opens résumé drop-off.
+            📱 Scan to play. {RESUME_UNLOCK_THRESHOLD} points opens résumé drop-off.
           </p>
         </div>
       </section>
 
       <section className="flex flex-col justify-center">
-        <h2 className="font-display text-[40px] font-bold">The board</h2>
-        <div className="mt-2 rounded-md border-4 border-ink bg-sheet">
+        <h2 className="font-display text-[40px] font-bold">🏆 Leaderboard</h2>
+        <div className="mt-2 rounded-xl border-4 border-edge bg-sheet">
           {rows && rows.length > 0 ? (
             <BoardList rows={rows} large />
           ) : (

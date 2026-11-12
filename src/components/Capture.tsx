@@ -132,7 +132,7 @@ export function ResumeUpload({ playerId }: { playerId: Id<"players"> }) {
     <div className="space-y-3">
       {existing && (
         <Notice tone="good">
-          Résumé sent: <strong className="break-all font-semibold">{existing.filename}</strong>
+          ✅ Résumé sent: <strong className="break-all font-semibold">{existing.filename}</strong>
         </Notice>
       )}
       <input
@@ -147,7 +147,7 @@ export function ResumeUpload({ playerId }: { playerId: Id<"players"> }) {
         }}
       />
       <Button variant={existing ? "secondary" : "primary"} disabled={busy} onClick={() => input.current?.click()}>
-        {busy ? "Sending" : existing ? "Send a newer version" : "Send résumé"}
+        {busy ? "Sending" : existing ? "Send a newer version" : "📎 Send résumé"}
       </Button>
       <p className="text-[14px] text-ink-soft">PDF or Word, up to 5 MB.</p>
       {error && <Notice tone="bad">{error}</Notice>}
@@ -164,7 +164,7 @@ export function DrawEntry({ playerId }: { playerId: Id<"players"> }) {
   if (entry) {
     return (
       <Notice tone="good">
-        You're entered. Your code is{" "}
+        🎉 You're entered. Your code is{" "}
         <strong className="font-display tabular text-[22px] font-bold tracking-wider">{entry.code}</strong>. Show it at
         the booth if your name is drawn.
       </Notice>
@@ -187,7 +187,7 @@ export function DrawEntry({ playerId }: { playerId: Id<"players"> }) {
           }
         }}
       >
-        {busy ? "Entering" : "Enter the draw"}
+        {busy ? "Entering" : "🎟 Enter the draw"}
       </Button>
       <p className="text-[14px] text-ink-soft">{DRAW.rules}</p>
       {error && <Notice tone="bad">{error}</Notice>}
@@ -250,7 +250,7 @@ export function FollowUpForm({ playerId, me }: { playerId: Id<"players">; me: Me
       />
       {error && <Notice tone="bad">{error}</Notice>}
       <Button disabled={busy} onClick={() => answer(true)}>
-        Yes, follow up with me
+        👍 Yes, follow up with me
       </Button>
       <Button variant="quiet" disabled={busy} onClick={() => answer(false)}>
         No thanks
@@ -275,16 +275,16 @@ export function useNextStep(playerId: Id<"players">, me: Me): StepId | null {
 
 export const STEP_COPY: Record<StepId, { title: string; body: string }> = {
   profile: {
-    title: `Add your school for ${PROFILE_BONUS} points`,
+    title: `🎓 Add your school for ${PROFILE_BONUS} points`,
     body: "Four taps. It tells us which openings fit you.",
   },
   resume: {
-    title: "You've unlocked résumé drop-off",
+    title: "📄 You've unlocked résumé drop-off",
     body: "It goes straight to the engineers at this booth, with your score attached.",
   },
-  draw: { title: DRAW.title, body: `${DRAW.prize}. ${DRAW.closes}.` },
+  draw: { title: `🎟 ${DRAW.title}`, body: `${DRAW.prize}. ${DRAW.closes}.` },
   followup: {
-    title: "Want to hear from us after today?",
+    title: "🤝 Want to hear from us after today?",
     body: "Tell us what you're curious about and we'll match you with the right person.",
   },
 };

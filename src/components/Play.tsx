@@ -7,7 +7,7 @@ import { difficultyConfig, puzzles, type Puzzle } from "../data/puzzles";
 import { QUESTION_SECONDS, ROUND_SIZE, STREAK_THRESHOLD, pickRound } from "../data/scoring";
 import { errorMessage } from "../lib/session";
 import { STEP_COPY, StepBody, useNextStep, type Me } from "./Capture";
-import { Button, Notice, PoleTag, Sheet, cx } from "./ui";
+import { Button, Confetti, Notice, PoleTag, Sheet, cx } from "./ui";
 
 type Phase = "idle" | "question" | "feedback" | "summary";
 
@@ -118,20 +118,20 @@ export default function Play({
         </header>
 
         <Button onClick={startRound} disabled={solved === undefined} className="min-h-14 text-[20px]">
-          {me.answeredCount === 0 ? "Start round 1" : boardCleared ? "Play a practice round" : "Start the next round"}
+          ⚡ {me.answeredCount === 0 ? "Start round 1" : boardCleared ? "Play a practice round" : "Start the next round"}
         </Button>
 
         <Sheet>
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-[20px] font-semibold">
-              {toUnlock > 0 ? `${toUnlock} points to résumé drop-off` : "Résumé drop-off is open"}
+              {toUnlock > 0 ? `🔒 ${toUnlock} points to résumé drop-off` : "📄 Résumé drop-off is open"}
             </h2>
             <span className="tabular text-[14px] text-ink-soft">
               {Math.min(me.totalScore, RESUME_UNLOCK_THRESHOLD)} / {RESUME_UNLOCK_THRESHOLD}
             </span>
           </div>
           <div
-            className="mt-2 h-3 overflow-hidden rounded-sm border-2 border-ink bg-sheet"
+            className="mt-2 h-3 overflow-hidden rounded-sm border-2 border-edge bg-sheet"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={RESUME_UNLOCK_THRESHOLD}
@@ -157,14 +157,12 @@ export default function Play({
         )}
 
         <Sheet>
-          <h2 className="font-display text-[20px] font-semibold">How points work</h2>
+          <h2 className="font-display text-[20px] font-semibold text-volt">Scoring tips</h2>
           <ul className="mt-1.5 space-y-1 text-[15px] text-ink-soft">
-            <li>100 to 750 for a correct answer, more for harder questions.</li>
-            <li>3 extra for every second left on the clock.</li>
-            <li>
-              25% extra once you have {STREAK_THRESHOLD} right in a row.
-            </li>
-            <li>Using a hint gives up the time bonus for that question.</li>
+            <li>📈 100 to 750 for a correct answer, more for harder questions.</li>
+            <li>⏱ 3 extra for every second left on the clock.</li>
+            <li>🔥 25% extra once you have {STREAK_THRESHOLD} right in a row.</li>
+            <li>💡 Using a hint gives up the time bonus for that question.</li>
           </ul>
         </Sheet>
       </div>
@@ -177,7 +175,9 @@ export default function Play({
       <div className="space-y-4">
         <header className="flex items-end justify-between gap-3">
           <div>
-            <h1 className="font-display text-[34px] font-bold leading-none">Round done</h1>
+            <h1 className="font-display text-[34px] font-bold leading-none">
+              <span className="pop">{roundCorrect >= 3 ? "🎉" : "💪"}</span> Round done
+            </h1>
             <p className="mt-1 text-ink-soft">
               {roundCorrect} of {round.length} correct
               {rank ? `. You're number ${rank.rank}${rank.capped ? "+" : ""} on the board.` : "."}
@@ -221,9 +221,9 @@ export default function Play({
       </div>
 
       <div className="flex items-center gap-3" aria-hidden={phase !== "question"}>
-        <div className="h-3 flex-1 overflow-hidden rounded-sm border-2 border-ink bg-sheet">
+        <div className="h-3 flex-1 overflow-hidden rounded-sm border-2 border-edge bg-sheet">
           <div
-            className={cx("h-full transition-[width] duration-200 ease-linear", low ? "bg-stop" : "bg-ink")}
+            className={cx("h-full transition-[width] duration-200 ease-linear", low ? "bg-stop" : "bg-hazard")}
             style={{ width: `${phase === "question" ? (msLeft / (QUESTION_SECONDS * 1000)) * 100 : 0}%` }}
           />
         </div>
@@ -234,13 +234,13 @@ export default function Play({
 
       {me.currentStreak >= STREAK_THRESHOLD && phase === "question" && (
         <p className="text-[15px] font-semibold">
-          {me.currentStreak} in a row. The 25% streak bonus is on.
+          🔥 {me.currentStreak} in a row. The 25% streak bonus is on.
         </p>
       )}
 
       <h1 className="text-[21px] font-semibold leading-snug">{puzzle.question}</h1>
 
-      {usedHint && puzzle.hint && <Notice tone="info">Hint: {puzzle.hint}</Notice>}
+      {usedHint && puzzle.hint && <Notice tone="info">💡 Hint: {puzzle.hint}</Notice>}
 
       <ol className="space-y-2.5">
         {puzzle.options.map((opt, i) => {
@@ -253,8 +253,8 @@ export default function Play({
                 disabled={revealed}
                 onClick={() => answer(i)}
                 className={cx(
-                  "flex min-h-14 w-full items-center gap-3 rounded-md border-2 px-3.5 py-2.5 text-left text-[17px]",
-                  !revealed && "border-ink bg-sheet active:bg-hazard/40",
+                  "flex min-h-14 w-full items-center gap-3 rounded-xl border-2 px-3.5 py-2.5 text-left text-[17px]",
+                  !revealed && "border-edge bg-sheet active:bg-hazard/20",
                   revealed && isCorrect && "border-glass bg-glass-tint font-semibold",
                   revealed && isPicked && !isCorrect && "border-stop bg-stop-tint",
                   revealed && !isCorrect && !isPicked && "border-line bg-sheet text-ink-soft",
@@ -263,15 +263,15 @@ export default function Play({
                 <span
                   className={cx(
                     "font-display flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-[18px] font-bold",
-                    revealed && isCorrect ? "border-glass bg-glass text-sheet" : "border-current",
+                    revealed && isCorrect ? "border-glass bg-glass text-night" : "border-current",
                   )}
                 >
                   {String.fromCharCode(65 + i)}
                 </span>
                 <span className="flex-1">{opt}</span>
-                {revealed && isCorrect && <span className="text-[14px] font-semibold text-glass">Correct</span>}
+                {revealed && isCorrect && <span className="text-[18px]">✅</span>}
                 {revealed && isPicked && !isCorrect && (
-                  <span className="text-[14px] font-semibold text-stop">Your answer</span>
+                  <span className="text-[18px]">❌</span>
                 )}
               </button>
             </li>
@@ -281,16 +281,18 @@ export default function Play({
 
       {phase === "question" && puzzle.hint && !usedHint && (
         <Button variant="quiet" onClick={() => setUsedHint(true)}>
-          Show a hint (gives up the time bonus)
+          💡 Show a hint (gives up the time bonus)
         </Button>
       )}
 
       {phase === "feedback" && (
         <div className="rise space-y-3" aria-live="polite">
+          {result?.correct && <Confetti />}
           <Sheet className={cx("border-l-[10px]", selected === puzzle.correct ? "border-l-glass" : "border-l-stop")}>
             <div className="flex items-start justify-between gap-3">
               <h2 className="font-display text-[26px] font-bold leading-tight">
-                {timedOut ? "Out of time" : selected === puzzle.correct ? "Correct" : "Not quite"}
+                <span className="pop">{timedOut ? "⏱" : selected === puzzle.correct ? "✅" : "❌"}</span>{" "}
+                {timedOut ? "Time's up!" : selected === puzzle.correct ? "Correct!" : "Not quite"}
               </h2>
               {result && result.points > 0 && (
                 <PoleTag value={`+${result.points}`} label="points" tone="hazard" />
@@ -320,7 +322,7 @@ export default function Play({
               }
             }}
           >
-            {last ? "See round results" : "Next question"}
+            {last ? "See round results →" : "Next question →"}
           </Button>
         </div>
       )}

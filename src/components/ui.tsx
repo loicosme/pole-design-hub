@@ -14,10 +14,10 @@ export function Button({ variant = "primary", block = true, className, ...props 
     <button
       {...props}
       className={cx(
-        "min-h-12 rounded-md border-2 px-5 py-2.5 text-[17px] font-semibold transition-colors",
+        "min-h-12 rounded-xl border-2 px-5 py-2.5 text-[17px] font-semibold transition-colors",
         "disabled:cursor-not-allowed disabled:border-line disabled:bg-steel disabled:text-ink-soft",
-        variant === "primary" && "border-ink bg-hazard text-ink hover:bg-hazard-deep",
-        variant === "secondary" && "border-ink bg-sheet text-ink hover:bg-sky",
+        variant === "primary" && "border-hazard bg-hazard text-night hover:bg-hazard-deep",
+        variant === "secondary" && "border-edge bg-sheet text-ink hover:bg-sky",
         variant === "quiet" && "border-transparent bg-transparent text-ink underline underline-offset-4",
         block && "w-full",
         className,
@@ -39,7 +39,7 @@ export function Field({
       </span>
       <input
         {...props}
-        className="h-12 w-full rounded-md border-2 border-ink bg-sheet px-3 text-[17px] placeholder:text-ink-soft/60"
+        className="h-12 w-full rounded-xl border-2 border-edge bg-sheet px-3 text-[17px] placeholder:text-ink-soft/60"
       />
     </label>
   );
@@ -69,8 +69,8 @@ export function ChoiceChips({
               aria-pressed={on}
               onClick={() => onChange(on ? "" : o)}
               className={cx(
-                "min-h-11 rounded-md border-2 px-3.5 text-[15px] font-medium",
-                on ? "border-ink bg-ink text-sheet" : "border-line bg-sheet text-ink",
+                "min-h-11 rounded-xl border-2 px-3.5 text-[15px] font-medium",
+                on ? "border-hazard bg-hazard/15 text-hazard" : "border-line bg-sheet text-ink",
               )}
             >
               {o}
@@ -97,7 +97,7 @@ export function Sheet({
   muted?: boolean;
 }) {
   return (
-    <section className={cx("rounded-md border-2", muted ? "border-line" : "border-ink bg-sheet", pad, className)}>
+    <section className={cx("rounded-xl border-2", muted ? "border-line" : "border-edge bg-sheet", pad, className)}>
       {children}
     </section>
   );
@@ -121,13 +121,13 @@ export function PoleTag({
   return (
     <div
       className={cx(
-        "relative inline-flex min-w-[4.75rem] flex-col items-center rounded-[5px] border-2 border-ink",
+        "relative inline-flex min-w-[4.75rem] flex-col items-center rounded-lg border-2 border-edge",
         size === "lg" ? "px-6 py-2" : "px-4 py-1",
-        tone === "hazard" ? "bg-hazard" : "bg-steel",
+        tone === "hazard" ? "border-hazard bg-hazard text-night" : "bg-steel",
       )}
     >
-      <span aria-hidden className="absolute left-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-ink/70" />
-      <span aria-hidden className="absolute right-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-ink/70" />
+      <span aria-hidden className="absolute left-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-current opacity-50" />
+      <span aria-hidden className="absolute right-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-current opacity-50" />
       <span
         className={cx(
           "font-display tabular font-bold leading-none",
@@ -136,7 +136,7 @@ export function PoleTag({
       >
         {value}
       </span>
-      <span className="text-[12px] font-medium leading-tight text-ink/80">{label}</span>
+      <span className="text-[12px] font-medium leading-tight opacity-80">{label}</span>
     </div>
   );
 }
@@ -146,13 +146,37 @@ export function Notice({ tone, children }: { tone: "good" | "bad" | "info"; chil
     <div
       role={tone === "bad" ? "alert" : "status"}
       className={cx(
-        "rounded-md border-2 px-3.5 py-2.5 text-[15px]",
+        "rounded-xl border-2 px-3.5 py-2.5 text-[15px]",
         tone === "good" && "border-glass bg-glass-tint text-ink",
         tone === "bad" && "border-stop bg-stop-tint text-ink",
         tone === "info" && "border-line bg-sheet text-ink",
       )}
     >
       {children}
+    </div>
+  );
+}
+
+/** A short burst for a correct answer. Skipped when the device asks for reduced motion. */
+export function Confetti() {
+  const colors = ["#fbbf24", "#22c55e", "#0ea5e9", "#a855f7", "#ef4444"];
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-50 overflow-hidden motion-reduce:hidden">
+      {Array.from({ length: 22 }).map((_, i) => (
+        <span
+          key={i}
+          className="absolute top-0"
+          style={{
+            left: `${(i * 37) % 100}%`,
+            width: 6 + (i % 4) * 2,
+            height: 6 + (i % 4) * 2,
+            background: colors[i % 5],
+            borderRadius: i % 2 ? 2 : "50%",
+            animation: `confetti-fall ${1.8 + (i % 5) * 0.2}s ease-in ${(i % 7) * 0.08}s forwards`,
+            opacity: 0,
+          }}
+        />
+      ))}
     </div>
   );
 }

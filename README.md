@@ -66,6 +66,12 @@ All scoring runs on the server (`convex/attempts.ts`, rules in `src/data/scoring
 
 ---
 
+## 3D Pole Explorer
+
+The Explore tab is a 3D pole built from three.js primitives (`src/components/Pole3D.tsx`, no model files). Drag to orbit, pinch or scroll to zoom, two fingers to pan. Tapping a part flies the camera in and plays its animation: the cutout drops open, lightning hits the arrester, current runs through the transformer. "Play tour" visits every part in turn. The 3D code loads only when the tab is opened, and falls back to a 2D drawing if WebGL isn't available.
+
+---
+
 ## What Gets Captured
 
 | Data | When | Where |

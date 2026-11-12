@@ -14,6 +14,8 @@ export interface BoardRow {
   isMe: boolean;
 }
 
+const MEDALS = ["🥇", "🥈", "🥉"];
+
 export function BoardList({ rows, large = false }: { rows: BoardRow[]; large?: boolean }) {
   return (
     <ol>
@@ -23,11 +25,11 @@ export function BoardList({ rows, large = false }: { rows: BoardRow[]; large?: b
           className={cx(
             "flex items-center gap-3 border-b border-line px-4 last:border-b-0",
             large ? "py-3" : "min-h-14 py-2",
-            r.isMe && "bg-hazard/35",
+            r.isMe && "bg-hazard/15",
           )}
         >
-          <span className={cx("font-display tabular w-8 font-bold", large ? "text-[34px]" : "text-[24px]")}>
-            {r.rank}
+          <span className={cx("font-display tabular w-9 text-center font-bold", large ? "text-[34px]" : "text-[24px]")}>
+            {MEDALS[r.rank - 1] ?? r.rank}
           </span>
           <span className="min-w-0 flex-1">
             <span className={cx("block truncate font-semibold", large && "text-[24px]")}>
@@ -58,14 +60,14 @@ export default function Board({ playerId, me }: { playerId: Id<"players">; me: M
     <div className="space-y-4">
       <header className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-[34px] font-bold leading-none">The board</h1>
+          <h1 className="font-display text-[34px] font-bold leading-none">🏆 Leaderboard</h1>
           <p className="mt-1 text-ink-soft">
             {me.totalScore === 0
               ? "Play a round to get on it."
               : next
                 ? `${(next.totalScore - me.totalScore + 1).toLocaleString()} points to pass ${next.name.replace(/\.$/, "")}.`
                 : rank?.rank === 1
-                  ? "You're on top. Stay there."
+                  ? "👑 You're on top. Stay there."
                   : "Updates live as people play."}
           </p>
         </div>

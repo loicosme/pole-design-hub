@@ -32,9 +32,12 @@ export interface PoleComponent {
   /** Item number shown in the drawing balloon. */
   item: number;
   name: string;
+  emoji: string;
   zone: string;
   description: string;
   detail: string;
+  /** One line for the 3D view: what the animation is showing. */
+  motion: string;
 }
 
 export const poleComponents: PoleComponent[] = [
@@ -42,81 +45,99 @@ export const poleComponents: PoleComponent[] = [
     id: "insulator",
     item: 1,
     name: "Insulator",
+    emoji: "💎",
     zone: "Primary",
     description:
       "Holds the energized conductor and keeps current from tracking into the crossarm and pole. Porcelain, glass or polymer.",
     detail: "The skirts lengthen the surface path so rain and dirt can't bridge it easily.",
+  motion: "Current runs past on the wire and none of it reaches the pole.",
   },
   {
     id: "crossarm",
     item: 2,
     name: "Crossarm",
+    emoji: "➕",
     zone: "Primary",
     description:
       "Wood, steel or fibreglass arm that carries the phase conductors and sets the spacing between them.",
     detail: "Spacing is a design value. Too tight and conductors can clash in wind or when ice sheds.",
+  motion: "Three phases, held apart at a fixed spacing.",
   },
   {
     id: "arrester",
     item: 3,
     name: "Surge arrester",
+    emoji: "⚡",
     zone: "Equipment",
     description:
       "Sits beside equipment and diverts lightning and switching surges to ground before they damage it.",
     detail: "At normal voltage it behaves like an open circuit. It only conducts during an overvoltage.",
+  motion: "Lightning hits the line and the surge is dumped to ground.",
   },
   {
     id: "fuse",
     item: 4,
     name: "Fused cutout",
+    emoji: "🔒",
     zone: "Equipment",
     description:
       "A fuse and switch in one. It opens when fault current flows, isolating the transformer from the line.",
     detail: "When the fuse blows the barrel drops open, so a crew can spot it from the ground.",
+  motion: "A fault melts the fuse and the barrel drops open.",
   },
   {
     id: "transformer",
     item: 5,
     name: "Distribution transformer",
+    emoji: "🔋",
     zone: "Equipment",
     description:
       "Steps the primary voltage (14.4 kV line-to-ground on a 25 kV system) down to 120/240 V for homes and small businesses.",
     detail: "One pole-mount unit typically serves a handful of homes, or a single farmyard.",
+  motion: "14.4 kV goes in the top. 120/240 V comes out the side.",
   },
   {
     id: "neutral",
     item: 6,
     name: "Neutral and secondary",
+    emoji: "〰️",
     zone: "Secondary",
     description:
       "The neutral is the return path for load current. Below it, secondary conductors carry 120/240 V to the service drops.",
     detail: "The neutral is bonded to ground at many points along the line, which keeps it near earth potential.",
+  motion: "Load current heads back to the source on the neutral.",
   },
   {
     id: "streetlight",
     item: 7,
     name: "Street light",
+    emoji: "💡",
     zone: "Secondary",
     description: "Fed from the secondary. LED fixtures have replaced most high-pressure sodium lights.",
     detail: "A light adds wind load and a bracket moment the pole design has to account for.",
+  motion: "Fed from the secondary, switched on at dusk.",
   },
   {
     id: "cablecom",
     item: 8,
     name: "Communication cables",
+    emoji: "📡",
     zone: "Communication",
     description:
       "Telephone, cable TV and fibre owned by other companies. They attach in the communication space, below all power conductors.",
     detail: "A required gap separates them from the power space so telecom crews can work safely.",
+  motion: "Data traffic, kept well below the power conductors.",
   },
   {
     id: "guy",
     item: 9,
     name: "Guy and anchor",
+    emoji: "⚓",
     zone: "Structure",
     description:
       "A steel strand from the pole to a ground anchor. It balances the pull where a line ends or changes direction.",
     detail: "Without it, an angle or dead-end pole would lean over time or break at the ground line.",
+  motion: "Line tension runs down the strand into the anchor.",
   },
 ];
 

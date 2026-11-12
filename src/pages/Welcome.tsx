@@ -59,7 +59,15 @@ export default function Welcome({
         <PoleDiagram className="-mr-2 w-[42%] shrink-0" />
       </div>
 
-      <form onSubmit={submit} className="mt-6 space-y-4 rounded-md border-2 border-ink bg-sheet p-4" noValidate>
+      <ul className="mt-4 flex flex-wrap gap-2">
+        {["⚡ Quiz rounds", "🔍 3D pole", "🏆 Live leaderboard", "📄 Résumé unlock at 500"].map((f) => (
+          <li key={f} className="rounded-full border border-hazard/25 bg-hazard/10 px-3 py-1 text-[13px] font-semibold text-hazard">
+            {f}
+          </li>
+        ))}
+      </ul>
+
+      <form onSubmit={submit} className="mt-6 space-y-4 rounded-xl border-2 border-edge bg-sheet p-4" noValidate>
         <Field
           label="Name"
           value={name}
@@ -83,7 +91,7 @@ export default function Welcome({
             type="checkbox"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 size-6 shrink-0 accent-ink"
+            className="mt-0.5 size-6 shrink-0 accent-hazard"
           />
           <span className="text-[15px] leading-snug">
             {consentText()}
@@ -92,7 +100,7 @@ export default function Welcome({
         </label>
         {error && <Notice tone="bad">{error}</Notice>}
         <Button type="submit" disabled={busy} className="min-h-14 text-[20px]">
-          {busy ? "Signing you up" : "Start round 1"}
+          {busy ? "Signing you up" : "⚡ Start playing"}
         </Button>
         <p className="text-[14px] text-ink-soft">
           That's all we need to start. Add your school after the first round for {PROFILE_BONUS} bonus points.
@@ -101,11 +109,11 @@ export default function Welcome({
 
       {top && top.length > 0 && (
         <section className="mt-6">
-          <h2 className="font-display text-[22px] font-semibold">Scores to beat</h2>
+          <h2 className="font-display text-[22px] font-semibold">🏆 Scores to beat</h2>
           <ol className="mt-1">
             {top.map((r) => (
               <li key={r.rank} className="flex items-baseline gap-3 border-b border-line py-2">
-                <span className="font-display tabular w-5 text-[22px] font-bold">{r.rank}</span>
+                <span className="w-7 text-[20px]">{["🥇", "🥈", "🥉"][r.rank - 1] ?? r.rank}</span>
                 <span className="flex-1 truncate font-medium">{r.name}</span>
                 <span className="font-display tabular text-[22px] font-bold">{r.totalScore.toLocaleString()}</span>
               </li>

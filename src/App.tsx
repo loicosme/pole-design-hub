@@ -54,7 +54,7 @@ export default function App() {
   return (
     <ConvexProvider client={convex}>
       {IS_DEMO && (
-        <div className="bg-ink px-3 py-1 text-center text-[13px] text-sheet">
+        <div className="bg-hazard/15 px-3 py-1 text-center text-[13px] text-hazard">
           Demo mode. Sample players, and nothing leaves this device.
         </div>
       )}

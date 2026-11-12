@@ -167,7 +167,7 @@ export default function Recruiter() {
 
       <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
         {stats.map(([label, n]) => (
-          <div key={label} className="rounded-md border-2 border-ink bg-sheet px-3 py-2">
+          <div key={label} className="rounded-xl border-2 border-edge bg-sheet px-3 py-2">
             <dd className="font-display tabular text-[32px] font-bold leading-none">{n}</dd>
             <dt className="text-[14px] text-ink-soft">{label}</dt>
           </div>
@@ -190,7 +190,7 @@ export default function Recruiter() {
           ] as const
         ).map(([label, on, set]) => (
           <label key={label} className="flex h-12 cursor-pointer items-center gap-2 font-medium">
-            <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} className="size-5 accent-ink" />
+            <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} className="size-5 accent-hazard" />
             {label}
           </label>
         ))}
@@ -202,9 +202,9 @@ export default function Recruiter() {
         </div>
       )}
 
-      <div className="mt-4 overflow-x-auto rounded-md border-2 border-ink bg-sheet">
+      <div className="mt-4 overflow-x-auto rounded-xl border-2 border-edge bg-sheet">
         <table className="w-full min-w-[860px] text-left text-[15px]">
-          <thead className="border-b-2 border-ink">
+          <thead className="border-b-2 border-edge">
             <tr>
               {["Name", "School and program", "Looking for", "Score", "Accuracy", "Résumé", "Follow-up", "Event"].map(
                 (h) => (

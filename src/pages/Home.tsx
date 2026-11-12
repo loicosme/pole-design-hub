@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
-import { Gift, Trophy, UtilityPole, Zap } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { BRAND } from "../branding";
@@ -14,11 +13,11 @@ import { PoleTag, cx } from "../components/ui";
 
 type Tab = "play" | "pole" | "board" | "rewards";
 
-const TABS: { id: Tab; label: string; icon: typeof Zap }[] = [
-  { id: "play", label: "Play", icon: Zap },
-  { id: "pole", label: "Pole", icon: UtilityPole },
-  { id: "board", label: "Board", icon: Trophy },
-  { id: "rewards", label: "Rewards", icon: Gift },
+const TABS: { id: Tab; label: string; emoji: string }[] = [
+  { id: "play", label: "Play", emoji: "⚡" },
+  { id: "pole", label: "Explore", emoji: "🔍" },
+  { id: "board", label: "Ranks", emoji: "🏆" },
+  { id: "rewards", label: "Win", emoji: "🎁" },
 ];
 
 export default function Home({ playerId, onSignOut }: { playerId: Id<"players">; onSignOut: () => void }) {
@@ -36,7 +35,7 @@ export default function Home({ playerId, onSignOut }: { playerId: Id<"players">;
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b-2 border-ink bg-sky px-4 py-2">
+      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b-2 border-edge bg-sky px-4 py-2">
         <div className="min-w-0">
           <p className="font-display truncate text-[20px] font-bold leading-tight">{BRAND.appName}</p>
           <p className="truncate text-[14px] text-ink-soft">
@@ -55,10 +54,10 @@ export default function Home({ playerId, onSignOut }: { playerId: Id<"players">;
 
       <nav
         aria-label="Sections"
-        className="fixed inset-x-0 bottom-0 z-10 border-t-2 border-ink bg-sheet pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-10 border-t-2 border-edge bg-sheet pb-[env(safe-area-inset-bottom)]"
       >
         <ul className="mx-auto flex max-w-md">
-          {TABS.map(({ id, label, icon: Icon }) => {
+          {TABS.map(({ id, label, emoji }) => {
             const on = tab === id;
             return (
               <li key={id} className="flex-1">
@@ -70,10 +69,12 @@ export default function Home({ playerId, onSignOut }: { playerId: Id<"players">;
                   aria-current={on ? "page" : undefined}
                   className={cx(
                     "flex h-16 w-full flex-col items-center justify-center gap-0.5 text-[13px] font-semibold",
-                    on ? "bg-hazard text-ink" : "text-ink-soft",
+                    on ? "bg-hazard/15 text-hazard" : "text-ink-soft",
                   )}
                 >
-                  <Icon size={22} strokeWidth={on ? 2.5 : 2} aria-hidden />
+                  <span aria-hidden className={cx("text-[22px] leading-none transition-transform", on && "scale-125")}>
+                    {emoji}
+                  </span>
                   {label}
                 </button>
               </li>

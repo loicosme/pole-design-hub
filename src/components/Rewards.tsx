@@ -27,7 +27,7 @@ function Step({
         <span
           className={cx(
             "shrink-0 rounded-sm px-2 py-0.5 text-[13px] font-semibold",
-            done ? "bg-glass text-sheet" : locked ? "bg-steel text-ink-soft" : "bg-hazard text-ink",
+            done ? "bg-glass text-night" : locked ? "bg-steel text-ink-soft" : "bg-hazard text-night",
           )}
         >
           {status}
@@ -48,12 +48,12 @@ export default function Rewards({ playerId, me }: { playerId: Id<"players">; me:
   return (
     <div className="space-y-4">
       <header>
-        <h1 className="font-display text-[34px] font-bold leading-none">Rewards</h1>
+        <h1 className="font-display text-[34px] font-bold leading-none">🎁 Win</h1>
         <p className="mt-1 text-ink-soft">What your points open up.</p>
       </header>
 
       <Step
-        title="Your profile"
+        title="🎓 Your profile"
         done={me.profileComplete}
         status={me.profileComplete ? "Done" : `Worth ${PROFILE_BONUS} points`}
       >
@@ -61,7 +61,7 @@ export default function Rewards({ playerId, me }: { playerId: Id<"players">; me:
       </Step>
 
       <Step
-        title="Résumé drop-off"
+        title={unlocked ? "📄 Résumé drop-off" : "🔒 Résumé drop-off"}
         done={Boolean(resume)}
         locked={!unlocked}
         status={resume ? "Sent" : unlocked ? "Open" : lockedStatus}
@@ -77,7 +77,7 @@ export default function Rewards({ playerId, me }: { playerId: Id<"players">; me:
 
       {DRAW.enabled && (
         <Step
-          title={DRAW.title}
+          title={`${unlocked ? "🎟" : "🔒"} ${DRAW.title}`}
           done={Boolean(entry)}
           locked={!unlocked}
           status={entry ? "Entered" : unlocked ? "Open" : lockedStatus}
@@ -90,7 +90,7 @@ export default function Rewards({ playerId, me }: { playerId: Id<"players">; me:
       )}
 
       <Step
-        title="Follow-up after the event"
+        title="🤝 Follow-up after the event"
         done={me.followUpAnswered && me.contactOptIn}
         status={me.followUpAnswered ? (me.contactOptIn ? "Yes" : "No") : "Your call"}
       >
